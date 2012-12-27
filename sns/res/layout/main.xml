@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/showTweetListRoot"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:id="@+id/headerBar"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/top_bar_background"
+        android:gravity="center_vertical"
+        android:orientation="horizontal" >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="left"
+            android:orientation="horizontal" >
+
+            <ImageButton
+                android:id="@+id/headerBarRefreshButton"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:background="@drawable/header_button"
+                android:focusable="false"
+                android:src="@drawable/ic_menu_refresh" />
+
+            <ImageButton
+                android:id="@+id/headerBarTimelineButton"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:background="@drawable/header_button"
+                android:focusable="false"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:src="@drawable/ic_menu_refresh"
+                android:text="Timeline"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/headerBarFavoritesButton"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:background="@drawable/header_button"
+                android:focusable="false"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:src="@drawable/ic_twimight_favorites"
+                android:text="Favorites"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/headerBarMentionsButton"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:background="@drawable/header_button"
+                android:focusable="false"
+                android:paddingLeft="18dp"
+                android:paddingRight="18dp"
+                android:src="@drawable/ic_twimight_mentions"
+                android:text="Mentions"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:gravity="right"
+            android:orientation="horizontal" >
+
+            <ImageButton
+                android:id="@+id/headerBarTweetButton"
+                android:layout_width="50dp"
+                android:layout_height="fill_parent"
+                android:layout_marginRight="8dp"
+                android:background="@drawable/header_button"
+                android:focusable="false"
+                android:src="@drawable/ic_twimight_compose" />
+
+            <ImageButton
+                android:id="@+id/headerBarSearchButton"
+                android:layout_width="40dp"
+                android:layout_height="fill_parent"
+                android:background="@drawable/header_button"
+                android:focusable="false"
+                android:minWidth="40dp"
+                android:src="@drawable/ic_twimight_search" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <ch.ethz.twimight.net.twitter.TweetListView
+        android:id="@+id/tweetList"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:divider="@color/twimightBackgroundLight"
+        android:fastScrollEnabled="true"
+        android:scrollingCache="true" />
+
+    <TextView
+        android:id="@+id/tweetListEmpty"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingTop="20dp"
+        android:text="@string/label_loading"
+        android:textSize="16sp" />
+
+</LinearLayout>

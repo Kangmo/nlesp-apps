@@ -1,0 +1,92 @@
+10-12 13:28:47.112: D/TweetsContentProvider(654): Query TIMELINE_ALL
+10-12 13:28:47.662: D/WEGRA_URL_CONNECTION(654): http://api.twitter.com/1/statuses/home_timeline.json
+10-12 13:28:47.702: D/WEGRA_VARS(654): {count=50, include_entities=1, since_id=256606125523349505, include_rts=1}
+10-12 13:28:47.702: D/WEGRA_AUTHENTICATED(654): true
+[{
+    "contributors": null,
+    "text": "Interesting read: Embracing the Flexibility of the Web With \u2018Responsive Enhancement\u2019 http://t.co/0dmuFoLD  #webdesign via @clientspot",
+    "geo": null,
+    "retweeted": false,
+    "in_reply_to_screen_name": null,
+    "possibly_sensitive": false,
+    "truncated": false,
+    "entities": {
+        "urls": [{
+            "display_url": "goo.gl/aksaj",
+            "expanded_url": "http://goo.gl/aksaj",
+            "indices": [
+                85,
+                105
+            ],
+            "url": "http://t.co/0dmuFoLD"
+        }],
+        "hashtags": [{
+            "indices": [
+                107,
+                117
+            ],
+            "text": "webdesign"
+        }],
+        "user_mentions": [{
+            "id": 44946161,
+            "indices": [
+                122,
+                133
+            ],
+            "screen_name": "clientspot",
+            "id_str": "44946161",
+            "name": "MyClientSpot.com"
+        }]
+    },
+    "in_reply_to_status_id_str": null,
+    "id": 256611451639324672,
+    "in_reply_to_user_id_str": null,
+    "source": "<a href=\"http://www.hootsuite.com\" rel=\"nofollow\">HootSuite<\/a>",
+    "favorited": false,
+    "in_reply_to_status_id": null,
+    "retweet_count": 0,
+    "in_reply_to_user_id": null,
+    "created_at": "Fri Oct 12 04:25:12 +0000 2012",
+    "id_str": "256611451639324672",
+    "place": null,
+    "user": {
+        "location": "",
+        "default_profile": false,
+        "profile_background_tile": false,
+        "statuses_count": 25915,
+        "lang": "en",
+        "profile_link_color": "0084B4",
+        "id": 18934825,
+        "following": true,
+        "favourites_count": 16,
+        "protected": false,
+        "profile_text_color": "333333",
+        "contributors_enabled": false,
+        "verified": false,
+        "description": "Daily inspiration source for web designers, illustrators, Twitter addicts, iPhone lovers, and other creative humans. Edited by @Zorzini",
+        "profile_sidebar_border_color": "BDDCAD",
+        "name": "Inspired Magazine",
+        "profile_background_color": "176E6B",
+        "created_at": "Tue Jan 13 10:40:39 +0000 2009",
+        "default_profile_image": false,
+        "followers_count": 51278,
+        "profile_image_url_https": "https://si0.twimg.com/profile_images/2100937572/avatar_normal.png",
+        "geo_enabled": false,
+        "profile_background_image_url": "http://a0.twimg.com/profile_background_images/48125820/twitterback4.png",
+        "profile_background_image_url_https": "https://si0.twimg.com/profile_background_images/48125820/twitterback4.png",
+        "follow_request_sent": null,
+        "url": "http://www.inspiredm.com",
+        "utc_offset": 7200,
+        "time_zone": "Bucharest",
+        "notifications": null,
+        "profile_use_background_image": true,
+        "friends_count": 24241,
+        "profile_sidebar_fill_color": "DDFFCC",
+        "screen_name": "inspiredmag",
+        "id_str": "18934825",
+        "profile_image_url": "http://a0.twimg.com/profile_images/2100937572/avatar_normal.png",
+        "is_translator": false,
+        "listed_count": 5088
+    },
+    "coordinates": null
+}]

@@ -1,5 +1,0 @@
-home_timeline
-10-12 18:48:58.528: D/WEGRA(439): [URLConnectionHttpClient] URL: http://api.twitter.com/1/statuses/home_timeline.json?count=50&include_entities=1&since_id=256689459309977600&include_rts=1&
-10-12 18:48:58.578: D/WEGRA(439): [URLConnectionHttpClient] vars: {count=50, include_entities=1, since_id=256689459309977600, include_rts=1}
-10-12 18:48:58.578: D/WEGRA(439): [URLConnectionHttpClient] authenticate: true
-

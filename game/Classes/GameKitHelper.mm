@@ -7,217 +7,141 @@
 
 #import "GameKitHelper.h"
 
+/*
+// Not supported on R0
 static NSString* kCachedAchievementsFile = @"CachedAchievements.archive";
+*/
 
-@interface GameKitHelper (Private)
--(void) registerForLocalPlayerAuthChange;
--(void) setLastError:(NSError*)error;
--(void) initCachedAchievements;
--(void) cacheAchievement:(GKAchievement*)achievement;
--(void) uncacheAchievement:(GKAchievement*)achievement;
--(void) loadAchievements;
--(void) initMatchInvitationHandler;
--(UIViewController*) getRootViewController;
-@end
-
-@implementation GameKitHelper
-
-static GameKitHelper *instanceOfGameKitHelper;
-
-#pragma mark Singleton stuff
-+(id) alloc
+GameKitHelper & GameKitHelper::sharedGameKitHelper() 
 {
-	@synchronized(self)	
-	{
-		NSAssert(instanceOfGameKitHelper == nil, @"Attempted to allocate a second instance of the singleton: GameKitHelper");
-		instanceOfGameKitHelper = [[super alloc] retain];
-		return instanceOfGameKitHelper;
-	}
-	
-	// to avoid compiler warning
-	return nil;
+    static GameKitHelper * theGameKitHelper = NULL;
+    
+    if ( theGameKitHelper == NULL ) 
+    {
+// BUGBUG Need to initialize GameKitHelper        
+//        theGameKitHelper = new GameKitHelper();
+    }
+    return *theGameKitHelper;
 }
 
-+(GameKitHelper*) sharedGameKitHelper
+GameKitHelper::GameKitHelper()
 {
-	@synchronized(self)
-	{
-		if (instanceOfGameKitHelper == nil)
-		{
-			[[GameKitHelper alloc] init];
-		}
-		
-		return instanceOfGameKitHelper;
-	}
-	
-	// to avoid compiler warning
-	return nil;
+    isVicDataCenterAvailable_ = YES;
+    
+    registerForLocalPlayerAuthChange();
+    
+    // Not supported on R0
+    //initCachedAchievements();
 }
 
-#pragma mark Init & Dealloc
-
-@synthesize delegate;
-@synthesize isGameCenterAvailable;
-@synthesize lastError;
-@synthesize achievements;
-@synthesize currentMatch;
-@synthesize matchStarted;
-
--(id) init
+// BUGBUG : This destructor is never called.
+GameKitHelper::~GameKitHelper()
 {
-	if ((self = [super init]))
-	{
-		// Test for Game Center availability
-		Class gameKitLocalPlayerClass = NSClassFromString(@"GKLocalPlayer");
-		bool isLocalPlayerAvailable = (gameKitLocalPlayerClass != nil);
-		
-		// Test if device is running iOS 4.1 or higher
-		NSString* reqSysVer = @"4.1";
-		NSString* currSysVer = [[UIDevice currentDevice] systemVersion];
-		bool isOSVer41 = ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending);
-		
-		isGameCenterAvailable = (isLocalPlayerAvailable && isOSVer41);
-		NSLog(@"GameCenter available = %@", isGameCenterAvailable ? @"YES" : @"NO");
-
-		[self registerForLocalPlayerAuthChange];
-
-		[self initCachedAchievements];
-	}
-	
-	return self;
+//	[[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
--(void) dealloc
-{
-	CCLOG(@"dealloc %@", self);
-	
-	[instanceOfGameKitHelper release];
-	instanceOfGameKitHelper = nil;
-	
-	[lastError release];
-	
-	[self saveCachedAchievements];
-	[cachedAchievements release];
-	[achievements release];
-
-	[currentMatch release];
-
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
-
-	[super dealloc];
-}
 
 #pragma mark setLastError
 
--(void) setLastError:(NSError*)error
+void GameKitHelper::setLastError(TxError * error)
 {
-	[lastError release];
-	lastError = [error copy];
+	lastError_ = error;
 	
-	if (lastError)
+	if (lastError_)
 	{
-		NSLog(@"GameKitHelper ERROR: %@", [[lastError userInfo] description]);
+		NSLog(@"GameKitHelper ERROR: %s", lastError_->toString().c_str() );
 	}
 }
 
 #pragma mark Player Authentication
 
--(void) authenticateLocalPlayer
+//from VKLocalPlayer::AuthenticateCompletionHandler
+void GameKitHelper::onCompleteAuthenticate( TxError * error )
 {
-	if (isGameCenterAvailable == NO)
+    setLastError(error);
+    
+    if (error == NULL)
+    {
+        initMatchInvitationHandler();
+        // Not supported on R0
+        /*
+        reportCachedAchievements();
+        loadAchievements();
+        */
+    }
+}
+
+void GameKitHelper::authenticateLocalPlayer()
+{
+	if (! isVicDataCenterAvailable() )
 		return;
 
-	GKLocalPlayer* localPlayer = [GKLocalPlayer localPlayer];
-	if (localPlayer.authenticated == NO)
+	VKLocalPlayer & localPlayer = VKLocalPlayer::localPlayer();
+	if (! localPlayer.authenticated() )
 	{
 		// Authenticate player, using a block object. See Apple's Block Programming guide for more info about Block Objects:
 		// http://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/Blocks/Articles/00_Introduction.html
-		[localPlayer authenticateWithCompletionHandler:^(NSError* error)
-		{
-			[self setLastError:error];
-			
-			if (error == nil)
-			{
-				[self initMatchInvitationHandler];
-				[self reportCachedAchievements];
-				[self loadAchievements];
-			}
-		}];
-		
-		/*
-		 // NOTE: bad example ahead!
-		 
-		 // If you want to modify a local variable inside a block object, you have to prefix it with the __block keyword.
-		 __block bool success = NO;
-		 
-		 [localPlayer authenticateWithCompletionHandler:^(NSError* error)
-		 {
-		 	success = (error == nil);
-		 }];
-		 
-		 // CAUTION: success will always be NO here! The block isn't run until later, when the authentication call was
-		 // confirmed by the Game Center server. Set a breakpoint inside the block to see what is happening in what order.
-		 if (success)
-		 	NSLog(@"Local player logged in!");
-		 else
-		 	NSLog(@"Local player NOT logged in!");
-		 */
+		localPlayer.authenticate(this);
 	}
 }
 
--(void) onLocalPlayerAuthenticationChanged
+// From VKLocalPlayer::LocalPlayerAuthenticationChangeHandler 
+void GameKitHelper::onChangeAuthentication()
 {
-	[delegate onLocalPlayerAuthenticationChanged];
+	[delegate_ onLocalPlayerAuthenticationChanged];
 }
 
--(void) registerForLocalPlayerAuthChange
+void GameKitHelper::registerForLocalPlayerAuthChange()
 {
-	if (isGameCenterAvailable == NO)
+	if (! isVicDataCenterAvailable() )
 		return;
 
-	// Register to receive notifications when local player authentication status changes
-	NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-	[nc addObserver:self
-		   selector:@selector(onLocalPlayerAuthenticationChanged)
-			   name:GKPlayerAuthenticationDidChangeNotificationName
-			 object:nil];
+	VKLocalPlayer & localPlayer = VKLocalPlayer::localPlayer();
+    localPlayer.authChangeHandler(this);
 }
 
-#pragma mark Friends & Player Info
-
--(void) getLocalPlayerFriends
+// From VKLocalPlayer::LoadFriendsCompletionHandler
+void GameKitHelper::onCompleteLoadFriends(const TxStringArray & friends, TxError * error)
 {
-	if (isGameCenterAvailable == NO)
+    setLastError(error);
+    [delegate_ onFriendListReceived:friends];
+}
+
+void GameKitHelper::getLocalPlayerFriends()
+{
+	if (! isVicDataCenterAvailable() )
 		return;
 	
-	GKLocalPlayer* localPlayer = [GKLocalPlayer localPlayer];
-	if (localPlayer.authenticated)
+	VKLocalPlayer & localPlayer = VKLocalPlayer::localPlayer();
+	if ( localPlayer.authenticated() )
 	{
 		// First, get the list of friends (player IDs)
-		[localPlayer loadFriendsWithCompletionHandler:^(NSArray* friends, NSError* error)
-		{
-			[self setLastError:error];
-			[delegate onFriendListReceived:friends];
-		}];
+		localPlayer.loadFriends(this);
 	}
 }
 
--(void) getPlayerInfo:(NSArray*)playerList
+// From VKPlayer::LoadPlayersCompletionHandler 
+void GameKitHelper::onCompelteLoadPlayers(const TxStringArray & players, TxError * error)
 {
-	if (isGameCenterAvailable == NO)
+    setLastError(error);
+    
+    [delegate_ onPlayerInfoReceived:players];
+}
+
+void GameKitHelper::getPlayerInfo(const TxStringArray & playerList)
+{
+	if (! isVicDataCenterAvailable() )
 		return;
 
 	// Get detailed information about a list of players
-	if ([playerList count] > 0)
+	if (playerList.size() > 0)
 	{
-		[GKPlayer loadPlayersForIdentifiers:playerList withCompletionHandler:^(NSArray* players, NSError* error)
-		{
-			[self setLastError:error];
-			[delegate onPlayerInfoReceived:players];
-		}];
+        VKPlayer::loadPlayers(playerList, this);
 	}
 }
 
+// Not Supported on R0.
+/*
 #pragma mark Scores & Leaderboard
 
 -(void) submitScore:(int64_t)score category:(NSString*)category
@@ -425,146 +349,181 @@ static GameKitHelper *instanceOfGameKitHelper;
 	// Save to disk immediately, to keep the removed cached achievement from being loaded again
 	[self saveCachedAchievements];
 }
+*/
 
 #pragma mark Matchmaking
 
--(void) disconnectCurrentMatch
+void GameKitHelper::disconnectCurrentMatch()
 {
-	[currentMatch disconnect];
-	currentMatch.delegate = nil;
-	[currentMatch release];
-	currentMatch = nil;
+    assert(currentMatch_);
+	currentMatch_->disconnect();
+	currentMatch_->delegate(NULL);
+	delete currentMatch_;
+    currentMatch_ = NULL;
 }
 
--(void) setCurrentMatch:(GKMatch*)match
+void GameKitHelper::setCurrentMatch(VKMatch * match)
 {
-	if ([currentMatch isEqual:match] == NO)
+// BUGBUG : Make sure replacing isEqual to pointer comparison
+//	if ([currentMatch isEqual:match] == NO)
+    if ( currentMatch_ != match )
 	{
-		[self disconnectCurrentMatch];
-		currentMatch = [match retain];
-		currentMatch.delegate = self;
+		disconnectCurrentMatch();
+        assert(currentMatch_ == NULL);
+		currentMatch_ = match;
+		currentMatch_->delegate(this);
 	}
 }
 
--(void) initMatchInvitationHandler
+
+// From VKMatchmaker::InviteHandler
+void GameKitHelper::onInvite(VKInvite * acceptedInvite, TxStringArray * playersToInvite)
 {
-	if (isGameCenterAvailable == NO)
-		return;
-
-	[GKMatchmaker sharedMatchmaker].inviteHandler = ^(GKInvite* acceptedInvite, NSArray* playersToInvite)
-	{
-		[self disconnectCurrentMatch];
-		
-		if (acceptedInvite)
-		{
-			[self showMatchmakerWithInvite:acceptedInvite];
-		}
-		else if (playersToInvite)
-		{
-			GKMatchRequest* request = [[[GKMatchRequest alloc] init] autorelease];
-			request.minPlayers = 2;
-			request.maxPlayers = 4;
-			request.playersToInvite = playersToInvite;
-
-			[self showMatchmakerWithRequest:request];
-		}
-	};
+    disconnectCurrentMatch();
+    
+    if (acceptedInvite)
+    {
+        // Not supported on R0
+        // BUGBUG : Is it OK not to show the Matchmaker?
+        
+        //[self showMatchmakerWithInvite:acceptedInvite];
+    }
+    else if (playersToInvite)
+    {
+        VKMatchRequest request;
+        request.minPlayers(2);
+        request.maxPlayers(4);
+        request.playersToInvite(*playersToInvite);
+        
+        // Not supported on R0
+        // BUGBUG : Is it OK not to show the Matchmaker?
+        //[self showMatchmakerWithRequest:request];
+    }
 }
 
--(void) findMatchForRequest:(GKMatchRequest*)request
+
+void GameKitHelper::initMatchInvitationHandler()
 {
-	if (isGameCenterAvailable == NO)
+	if (! isVicDataCenterAvailable() )
+		return;
+
+    VKMatchmaker::sharedMatchmaker().inviteHandler(this);
+}
+
+// From VKMatchmaker::FindMatchCompletionHandler
+void GameKitHelper::onCompleteFindMatch(VKMatch * match, TxError * error)
+{
+    setLastError(error);
+    
+    if (match != nil)
+    {
+        setCurrentMatch(match);
+        [delegate_ onMatchFound:match];
+    }
+}
+
+
+void GameKitHelper::findMatch(const VKMatchRequest & request)
+{
+	if (! isVicDataCenterAvailable() )
 		return;
 	
-	[[GKMatchmaker sharedMatchmaker] findMatchForRequest:request withCompletionHandler:^(GKMatch* match, NSError* error)
-	{
-		[self setLastError:error];
-		
-		if (match != nil)
-		{
-			[self setCurrentMatch:match];
-			[delegate onMatchFound:match];
-		}
-	}];
+	VKMatchmaker::sharedMatchmaker().findMatch(request, this);
 }
 
--(void) addPlayersToMatch:(GKMatchRequest*)request
+
+// From VKMatchmaker::AddPlayersCompletionHandler
+void GameKitHelper::onCompleteAddPlayers(TxError * error)
 {
-	if (isGameCenterAvailable == NO)
+    setLastError(error);
+    
+    bool success = (error == NULL);
+    [delegate_ onPlayersAddedToMatch:success];
+}
+
+void GameKitHelper::addPlayersToMatch(const VKMatchRequest & request)
+{
+	if (! isVicDataCenterAvailable() )
 		return;
 
-	if (currentMatch == nil)
+	if (currentMatch_ == NULL)
 		return;
 	
-	[[GKMatchmaker sharedMatchmaker] addPlayersToMatch:currentMatch matchRequest:request completionHandler:^(NSError* error)
-	{
-		[self setLastError:error];
-		
-		bool success = (error == nil);
-		[delegate onPlayersAddedToMatch:success];
-	}];
+	VKMatchmaker::sharedMatchmaker().addPlayers(currentMatch_, request, this);
 }
 
--(void) cancelMatchmakingRequest
+void GameKitHelper::cancelMatchmakingRequest()
 {
-	if (isGameCenterAvailable == NO)
+	if (! isVicDataCenterAvailable() )
 		return;
 
-	[[GKMatchmaker sharedMatchmaker] cancel];
+	VKMatchmaker::sharedMatchmaker().cancel();
 }
 
--(void) queryMatchmakingActivity
+// From VKMatchmaker::QueryActivityCompletionHandler
+void GameKitHelper::onCompleteQueryActivity(int activity, TxError * error)
 {
-	if (isGameCenterAvailable == NO)
+    setLastError(error);
+    
+    if (error == NULL)
+    {
+        [delegate_ onReceivedMatchmakingActivity:activity];
+    }
+}
+
+void GameKitHelper::queryMatchmakingActivity()
+{
+	if (! isVicDataCenterAvailable() )
 		return;
 
-	[[GKMatchmaker sharedMatchmaker] queryActivityWithCompletionHandler:^(NSInteger activity, NSError* error)
-	{
-		[self setLastError:error];
-		
-		if (error == nil)
-		{
-			[delegate onReceivedMatchmakingActivity:activity];
-		}
-	}];
+	VKMatchmaker::sharedMatchmaker().queryActivity(this);
 }
 
 #pragma mark Match Connection
 
--(void) match:(GKMatch*)match player:(NSString*)playerID didChangeState:(GKPlayerConnectionState)state
+// The player state changed (eg. connected or disconnected)
+void GameKitHelper::onChangeState( VKMatch * match, const TxString & playerID, VKPlayerConnectionState state )
 {
-	switch (state)
+	switch ((int)state)
 	{
-		case GKPlayerStateConnected:
-			[delegate onPlayerConnected:playerID];
+		case VKPlayerStateConnected:
+			[delegate_ onPlayerConnected:playerID];
 			break;
-		case GKPlayerStateDisconnected:
-			[delegate onPlayerDisconnected:playerID];
+		case VKPlayerStateDisconnected:
+			[delegate_ onPlayerDisconnected:playerID];
 			break;
 	}
 	
-	if (matchStarted == NO && match.expectedPlayerCount == 0)
+	if (matchStarted_ == NO && match->expectedPlayerCount() == 0)
 	{
-		matchStarted = YES;
-		[delegate onStartMatch];
+		matchStarted_ = YES;
+		[delegate_ onStartMatch];
 	}
 }
 
--(void) sendDataToAllPlayers:(void*)data length:(NSUInteger)length
+void GameKitHelper::sendDataToAllPlayers(void * data, unsigned int length)
 {
-	if (isGameCenterAvailable == NO)
+	if (! isVicDataCenterAvailable() )
 		return;
 	
-	NSError* error = nil;
-	NSData* packet = [NSData dataWithBytes:data length:length];
-	[currentMatch sendDataToAllPlayers:packet withDataMode:GKMatchSendDataUnreliable error:&error];
-	[self setLastError:error];
+	TxError* error = NULL;
+	
+    TxData packet(data, length);
+    
+    assert(currentMatch_);
+	currentMatch_->sendDataToAllPlayers(packet, VKMatchSendDataUnreliable, &error);
+	
+    setLastError(error);
 }
 
--(void) match:(GKMatch*)match didReceiveData:(NSData*)data fromPlayer:(NSString*)playerID
+// The match received data sent from the player.
+void GameKitHelper::onReceiveData( VKMatch * match, const TxData & data, const TxString & playerID )
 {
-	[delegate onReceivedData:data fromPlayer:playerID];
+	[delegate_ onReceivedData:data fromPlayer:playerID];
 }
+
+/*
+ // Not supported on R0
 
 #pragma mark Views (Leaderboard, Achievements)
 
@@ -588,7 +547,6 @@ static GameKitHelper *instanceOfGameKitHelper;
 }
 
 // Leaderboards
-
 -(void) showLeaderboard
 {
 	if (isGameCenterAvailable == NO)
@@ -628,7 +586,6 @@ static GameKitHelper *instanceOfGameKitHelper;
 	[self dismissModalViewController];
 	[delegate onAchievementsViewDismissed];
 }
-
 // Matchmaking
 
 -(void) showMatchmakerWithInvite:(GKInvite*)invite
@@ -670,5 +627,5 @@ static GameKitHelper *instanceOfGameKitHelper;
 	[self setCurrentMatch:match];
 	[delegate onMatchFound:match];
 }
+ */
 
-@end

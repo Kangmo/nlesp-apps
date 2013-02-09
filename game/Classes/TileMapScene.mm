@@ -31,9 +31,9 @@
 {
 	if ((self = [super init]))
 	{
-		GameKitHelper* gkHelper = [GameKitHelper sharedGameKitHelper];
-		gkHelper.delegate = self;
-		[gkHelper authenticateLocalPlayer];
+		GameKitHelper& gkHelper = GameKitHelper::sharedGameKitHelper();
+		gkHelper.delegate(self);
+		gkHelper.authenticateLocalPlayer();
 		
 		CCTMXTiledMap* tileMap = [CCTMXTiledMap tiledMapWithTMXFile:@"isometric-with-border.tmx"];
 		[self addChild:tileMap z:-1 tag:TileMapNode];
@@ -91,41 +91,57 @@
 #pragma mark GameKitHelper delegate methods
 -(void) onLocalPlayerAuthenticationChanged
 {
-	GKLocalPlayer* localPlayer = [GKLocalPlayer localPlayer];
-	CCLOG(@"LocalPlayer isAuthenticated changed to: %@", localPlayer.authenticated ? @"YES" : @"NO");
+	VKLocalPlayer & localPlayer = VKLocalPlayer::localPlayer();
+	CCLOG(@"LocalPlayer isAuthenticated changed to: %@", localPlayer.authenticated() ? @"YES" : @"NO");
 	
-	if (localPlayer.authenticated)
+	if (localPlayer.authenticated())
 	{
-		GameKitHelper* gkHelper = [GameKitHelper sharedGameKitHelper];
-		[gkHelper getLocalPlayerFriends];
+        GameKitHelper& gkHelper = GameKitHelper::sharedGameKitHelper();
+		gkHelper.getLocalPlayerFriends();
 		//[gkHelper resetAchievements];
 	}	
 }
 
--(void) onFriendListReceived:(NSArray*)friends
+-(void) onFriendListReceived:(const TxStringArray &)friends
 {
-	CCLOG(@"onFriendListReceived: %@", [friends description]);
-	GameKitHelper* gkHelper = [GameKitHelper sharedGameKitHelper];
-	[gkHelper getPlayerInfo:friends];
+	CCLOG(@"onFriendListReceived: %s", friends.toString().c_str());
+
+    GameKitHelper& gkHelper = GameKitHelper::sharedGameKitHelper();
+	gkHelper.getPlayerInfo(friends);
 }
 
--(void) onPlayerInfoReceived:(NSArray*)players
+-(void) onPlayerInfoReceived:(const TxStringArray &)players
 {
-	CCLOG(@"onPlayerInfoReceived: %@", [players description]);
-	GameKitHelper* gkHelper = [GameKitHelper sharedGameKitHelper];
+	CCLOG(@"onPlayerInfoReceived: %s", players.toString().c_str());
+    
+    GameKitHelper& gkHelper = GameKitHelper::sharedGameKitHelper();
+
+    /*
+    // Not supported Yet on R0
 	[gkHelper submitScore:1234 category:@"Playtime"];
-	
+	*/
+     
 	//[gkHelper showLeaderboard];
 	
-	GKMatchRequest* request = [[[GKMatchRequest alloc] init] autorelease];
-	request.minPlayers = 2;
-	request.maxPlayers = 4;
+	VKMatchRequest request;
+	request.minPlayers(2);
+	request.maxPlayers(4);
 	
 	//GameKitHelper* gkHelper = [GameKitHelper sharedGameKitHelper];
+    
+    
+    /*
+     // Not supported Yet on R0
 	[gkHelper showMatchmakerWithRequest:request];
-	[gkHelper queryMatchmakingActivity];
+     */
+    // BUGBUG : Not tested yet.
+    gkHelper.findMatch(request);
+
+    gkHelper.queryMatchmakingActivity();
 }
 
+/* 
+    // Not supported on R0
 -(void) onScoresSubmitted:(bool)success
 {
 	CCLOG(@"onScoresSubmitted: %@", success ? @"YES" : @"NO");
@@ -160,15 +176,15 @@
 {
 	CCLOG(@"onAchievementsViewDismissed");
 }
-
--(void) onReceivedMatchmakingActivity:(NSInteger)activity
+*/
+-(void) onReceivedMatchmakingActivity:(int)activity
 {
 	CCLOG(@"receivedMatchmakingActivity: %i", activity);
 }
 
--(void) onMatchFound:(GKMatch*)match
+-(void) onMatchFound:(VKMatch*)match
 {
-	CCLOG(@"onMatchFound: %@", match);
+	CCLOG(@"onMatchFound: %x", match);
 }
 
 -(void) onPlayersAddedToMatch:(bool)success
@@ -185,14 +201,14 @@
 	CCLOG(@"onMatchmakingViewError");
 }
 
--(void) onPlayerConnected:(NSString*)playerID
+-(void) onPlayerConnected:(const TxString &)playerID
 {
-	CCLOG(@"onPlayerConnected: %@", playerID);
+	CCLOG(@"onPlayerConnected: %s", playerID.c_str());
 }
 
--(void) onPlayerDisconnected:(NSString*)playerID
+-(void) onPlayerDisconnected:(const TxString &)playerID
 {
-	CCLOG(@"onPlayerDisconnected: %@", playerID);
+	CCLOG(@"onPlayerDisconnected: %s", playerID.c_str());
 }
 
 -(void) onStartMatch
@@ -201,10 +217,10 @@
 }
 
 // TM16: handles receiving of data, determines packet type and based on that executes certain code
--(void) onReceivedData:(NSData*)data fromPlayer:(NSString*)playerID
+-(void) onReceivedData:(const TxData &)data fromPlayer:(const TxString &)playerID
 {
-	SBasePacket* basePacket = (SBasePacket*)[data bytes];
-	CCLOG(@"onReceivedData: %@ fromPlayer: %@ - Packet type: %i", data, playerID, basePacket->type);
+	SBasePacket* basePacket = (SBasePacket*) data.bytes();
+	CCLOG(@"onReceivedData: %s fromPlayer: %s - Packet type: %i", data.toString().c_str(), playerID.c_str(), basePacket->type);
 	
 	switch (basePacket->type)
 	{
@@ -221,7 +237,7 @@
 			
 			// instruct remote players to move their tilemap layer to this position (giving the impression that the player has moved)
 			// this is just to show that it's working by "magically" moving the other device's screen/player
-			if (playerID != [GKLocalPlayer localPlayer].playerID)
+			if (playerID != VKLocalPlayer::localPlayer().playerID())
 			{
 				CCTMXTiledMap* tileMap = (CCTMXTiledMap*)[self getChildByTag:TileMapNode];
 				[self centerTileMapOnTileCoord:positionPacket->position tileMap:tileMap];
@@ -237,7 +253,7 @@
 // TM16: send a bogus score (simply an integer increased every time it is sent)
 -(void) sendScore
 {
-	if ([GameKitHelper sharedGameKitHelper].currentMatch != nil)
+	if (GameKitHelper::sharedGameKitHelper().currentMatch() != NULL)
 	{
 		bogusScore++;
 		
@@ -245,20 +261,20 @@
 		packet.type = kPacketTypeScore;
 		packet.score = bogusScore;
 		
-		[[GameKitHelper sharedGameKitHelper] sendDataToAllPlayers:&packet length:sizeof(packet)];
+		GameKitHelper::sharedGameKitHelper().sendDataToAllPlayers(&packet, sizeof(packet));
 	}
 }
 
 // TM16: send a tile coordinate
 -(void) sendPosition:(CGPoint)tilePos
 {
-	if ([GameKitHelper sharedGameKitHelper].currentMatch != nil)
+	if (GameKitHelper::sharedGameKitHelper().currentMatch() != NULL)
 	{
 		SPositionPacket packet;
 		packet.type = kPacketTypePosition;
 		packet.position = tilePos;
 		
-		[[GameKitHelper sharedGameKitHelper] sendDataToAllPlayers:&packet length:sizeof(packet)];
+		GameKitHelper::sharedGameKitHelper().sendDataToAllPlayers(&packet, sizeof(packet));
 	}
 }
 

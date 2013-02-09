@@ -19,10 +19,16 @@
 			android:background="@drawable/content_box" android:paddingLeft="10dp"
 			android:paddingTop="20dp" android:paddingBottom="20dp"
 			android:paddingRight="10dp" android:orientation="horizontal">
-			<ImageView android:id="@+id/showUserProfileImage"
-				android:layout_height="45dp" android:layout_width="45dp"
-				android:src="@drawable/default_profile" android:background="@drawable/image_border"
-				android:layout_marginRight="10dp" />
+
+			<ImageView
+			    android:id="@+id/showUserProfileImage"
+			    android:layout_width="45dp"
+			    android:layout_height="45dp"
+			    android:layout_marginRight="10dp"
+			    android:background="@drawable/image_border"
+			    android:src="@drawable/default_profile"
+			    android:visibility="visible" />
+
 			<LinearLayout android:id="@+id/linearLayout1"
 				android:layout_width="match_parent" android:layout_height="wrap_content"
 				android:orientation="vertical"
@@ -35,10 +41,16 @@
 					android:layout_width="wrap_content" android:layout_height="wrap_content"
 					android:text="TextView" android:textColor="@color/twimightTextDark"
 					android:textSize="18sp" />
-				<TextView android:id="@+id/showUserLocation"
-					android:layout_width="wrap_content" android:layout_height="wrap_content"
-					android:text="Location" android:textColor="@color/twimightTextLight"
-					android:textSize="18sp" />
+
+				<TextView
+				    android:id="@+id/showUserLocation"
+				    android:layout_width="wrap_content"
+				    android:layout_height="wrap_content"
+				    android:text="Location"
+				    android:textColor="@color/twimightTextLight"
+				    android:textSize="18sp"
+				    android:visibility="gone" />
+
 			</LinearLayout>
 		</LinearLayout>
 
@@ -49,18 +61,23 @@
 			android:padding="10dp">
 			<Button android:id="@+id/showUserFollowers"
 				android:layout_width="wrap_content" android:layout_height="wrap_content"
-				android:text="Followers" android:layout_marginRight="20dp"
+				android:text="@string/button_followers" android:layout_marginRight="20dp"
 				android:visibility="visible" android:paddingLeft="10dp" android:paddingRight="10dp" />
 			<Button android:id="@+id/showUserFriends"
 				android:layout_width="wrap_content" android:layout_height="wrap_content"
-				android:text="Friends" android:layout_marginRight="20dp"
-				 android:paddingLeft="10dp" android:paddingRight="10dp"
+				android:text="@string/button_followings" android:layout_marginRight="20dp"
+				android:paddingLeft="10dp" android:paddingRight="10dp"
+				android:visibility="visible" />
+			<Button android:id="@+id/editProfile"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:text="@string/button_edit_profile"
+				android:paddingLeft="10dp" android:paddingRight="10dp"
 				android:visibility="visible" />
 			<Button android:id="@+id/showUserDisasterPeers"
 				android:layout_width="wrap_content" android:layout_height="wrap_content"
 				android:text="Peers"
-				 android:paddingLeft="10dp" android:paddingRight="10dp"
-				android:visibility="visible" />
+				android:paddingLeft="10dp" android:paddingRight="10dp"
+				android:visibility="gone" />
 		</LinearLayout>
 		<LinearLayout android:id="@+id/showUserButtons"
 			android:orientation="vertical" android:layout_width="match_parent"
@@ -77,7 +94,7 @@
 					android:layout_marginRight="10dp" />
 				<TextView android:id="@+id/showUserInfoText2"
 					android:layout_width="wrap_content" style="@style/twimightDefaultTextAppearance" android:layout_height="wrap_content"
-					android:text="You will stop following this user once Internet connectivity is available." />
+					android:text="@string/info_will_stop_following" />
 			</LinearLayout>
 			<LinearLayout android:id="@+id/showUserTofollow"
 				android:orientation="horizontal" android:layout_width="match_parent"
@@ -89,46 +106,80 @@
 					android:layout_marginRight="10dp" />
 				<TextView android:id="@+id/showUserInfoText1"
 					android:layout_width="wrap_content" style="@style/twimightDefaultTextAppearance" android:layout_height="wrap_content"
-					android:text="You will start following this user once Internet connectivity is available." />
+					android:text="@string/info_will_start_following" />
 			</LinearLayout>
 			<LinearLayout android:layout_height="wrap_content"
 				android:layout_width="match_parent" android:orientation="horizontal">
 				<Button android:id="@+id/showUserFollow"
 					android:layout_width="wrap_content" android:layout_height="wrap_content"
-					android:text="Follow" android:layout_marginRight="20dp" android:paddingLeft="15dp" android:paddingRight="15dp"/>
-				<ImageButton android:id="@+id/showUserMention"
-					android:layout_width="wrap_content" android:layout_height="wrap_content"
-					android:src="@drawable/btn_twimight_reply" android:layout_marginRight="20dp" />
-				<ImageButton android:id="@+id/showUserMessage"
-					android:layout_width="wrap_content" android:layout_height="wrap_content"
-					android:src="@drawable/btn_twimight_dm" android:layout_marginRight="20dp"
-					android:visibility="visible" />
+					android:text="@string/button_follow" android:layout_marginRight="20dp" android:paddingLeft="15dp" android:paddingRight="15dp"/>
+
+				<ImageButton
+				    android:id="@+id/showUserMention"
+				    android:layout_width="wrap_content"
+				    android:layout_height="wrap_content"
+				    android:layout_marginRight="20dp"
+				    android:src="@drawable/btn_twimight_reply"
+				    android:visibility="gone" />
+
+				<ImageButton
+				    android:id="@+id/showUserMessage"
+				    android:layout_width="wrap_content"
+				    android:layout_height="wrap_content"
+				    android:layout_marginRight="20dp"
+				    android:focusable="false"
+				    android:src="@drawable/btn_twimight_dm"
+				    android:visibility="gone" />
+
 			</LinearLayout>
 		</LinearLayout>
 
 		<LinearLayout android:id="@+id/showUserAdditionalInfo"
 			android:paddingTop="10dp" android:orientation="vertical"
 			android:layout_width="match_parent" android:layout_height="wrap_content">
-			<TextView android:id="@+id/showUserDescription"
-				android:layout_width="match_parent" android:layout_height="wrap_content"
-				android:text="Description.." android:textSize="18sp"
-				 android:padding="10dp"
-				android:layout_marginBottom="10dp"
-				android:autoLink="web" 
-				android:textColor="@color/twimightTextDark"/>
-			<TextView android:id="@+id/showUserStats" android:text="User stats"
-				android:layout_width="match_parent" android:layout_height="wrap_content"
-				android:textColor="@color/twimightTextDark" android:padding="10dp"/>
+
+			<TextView
+			    android:id="@+id/showUserDescription"
+			    android:layout_width="match_parent"
+			    android:layout_height="wrap_content"
+			    android:layout_marginBottom="10dp"
+			    android:autoLink="web"
+			    android:padding="10dp"
+			    android:text="Description.."
+			    android:textColor="@color/twimightTextDark"
+			    android:textSize="18sp"
+			    android:visibility="visible" />
+
+			<TextView
+			    android:id="@+id/showUserStats"
+			    android:layout_width="match_parent"
+			    android:layout_height="wrap_content"
+			    android:padding="10dp"
+			    android:text="User stats"
+			    android:textColor="@color/twimightTextDark"
+			    android:visibility="gone" />
+
 		</LinearLayout>
 
-		<LinearLayout android:id="@+id/showUserTweetsButtons"
-			android:orientation="horizontal" android:layout_width="match_parent"
-			android:layout_height="wrap_content" android:padding="10dp" android:background="@drawable/content_box">
+		<LinearLayout
+		    android:id="@+id/showUserTweetsButtons"
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:background="@drawable/content_box"
+		    android:orientation="horizontal"
+		    android:padding="10dp"
+		    android:visibility="gone" >
 
-			<Button android:id="@+id/showUserTweetsButton"
-				android:layout_width="wrap_content" android:layout_height="wrap_content"
-				android:text="Tweets" android:paddingLeft="15dp" android:paddingRight="15dp"
-				android:visibility="visible"/>
+			<Button
+			    android:id="@+id/showUserTweetsButton"
+			    android:layout_width="wrap_content"
+			    android:layout_height="wrap_content"
+			    android:focusable="false"
+			    android:paddingLeft="15dp"
+			    android:paddingRight="15dp"
+			    android:text="Tweets"
+			    android:visibility="invisible" />
+
 		</LinearLayout>
 
 

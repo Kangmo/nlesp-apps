@@ -12,10 +12,9 @@
  ******************************************************************************/
 package ch.ethz.twimight.activities;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-
+import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.database.Cursor;
@@ -26,6 +25,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.Html;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -34,9 +34,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import ch.ethz.twimight.R;
-import ch.ethz.twimight.fragments.UserListFragment;
+import ch.ethz.twimight.data.DBOpenHelper;
 import ch.ethz.twimight.net.twitter.TwitterService;
 import ch.ethz.twimight.net.twitter.TwitterUsers;
+import ch.ethz.twimight.util.InternalStorageHelper;
 
 /**
  * Display a user
@@ -64,6 +65,9 @@ public class ShowUserActivity extends TwimightBaseActivity{
 	private ImageButton messageButton;
 	private Button showFollowersButton;
 	private Button showFriendsButton;
+	// VICDATA added buttons
+	private Button editProfileButton;
+	// END
 	private Button showDisPeersButton;
 	private LinearLayout followInfo;
 	private LinearLayout unfollowInfo;
@@ -96,6 +100,7 @@ public class ShowUserActivity extends TwimightBaseActivity{
 		unfollowInfo = (LinearLayout) findViewById(R.id.showUserTounfollow);
 		showFollowersButton = (Button) findViewById(R.id.showUserFollowers);
 		showFriendsButton = (Button) findViewById(R.id.showUserFriends);
+		editProfileButton = (Button) findViewById(R.id.editProfile);
 		showDisPeersButton = (Button) findViewById(R.id.showUserDisasterPeers);
 		showUserTweetsButton = (Button) findViewById(R.id.showUserTweetsButton);
 		running = true;
@@ -105,7 +110,8 @@ public class ShowUserActivity extends TwimightBaseActivity{
 
 			// get data from local DB
 			uri = Uri.parse("content://" + TwitterUsers.TWITTERUSERS_AUTHORITY + "/" + TwitterUsers.TWITTERUSERS + "/" + rowId);
-			c = getContentResolver().query(uri, null, null, null, null);			
+			c = getContentResolver().query(uri, null, null, null, null);
+			startManagingCursor(c);
 			
 			if(c.getCount() == 0) finish();
 
@@ -113,7 +119,7 @@ public class ShowUserActivity extends TwimightBaseActivity{
 
 		} else if(getIntent().hasExtra("screenname")){
 
-			Log.e(TAG, getIntent().getStringExtra("screenname"));
+			Log.d(TAG, getIntent().getStringExtra("screenname"));
 			
 			// get data from local DB
 			uri = Uri.parse("content://" + TwitterUsers.TWITTERUSERS_AUTHORITY + "/" + TwitterUsers.TWITTERUSERS);
@@ -161,9 +167,25 @@ public class ShowUserActivity extends TwimightBaseActivity{
 	@Override
 	public void onResume(){
 		super.onResume();
+//		uri = Uri.parse("content://" + TwitterUsers.TWITTERUSERS_AUTHORITY + "/" + TwitterUsers.TWITTERUSERS + "/" + rowId);
+//		c = getContentResolver().query(uri, null, null, null, null);
+//		startManagingCursor(c);
+//		if(c.getCount() == 0) finish();
+//		c.moveToFirst();
+		
 		observer = new UserContentObserver(handler);
 		c.registerContentObserver(observer);
 		running = true;
+
+		// VICDATA synch UI with updated user info.
+//		Log.d(TAG, "VICDATA: resumed... synch user info again.");
+//		Intent i = new Intent(this, TwitterService.class);
+//		i.putExtra("synch_request", TwitterService.SYNCH_USER);
+//		i.putExtra("rowId", rowId);
+//		startService(i);
+		
+//		showUserInfo();
+		// END
 	}
 	
 	/**
@@ -194,6 +216,9 @@ public class ShowUserActivity extends TwimightBaseActivity{
 		if(messageButton!=null) messageButton.setOnClickListener(null);
 		if(showFollowersButton!=null) showFollowersButton.setOnClickListener(null);
 		if(showFriendsButton!=null) showFriendsButton.setOnClickListener(null);
+		// VICDATA edit profile
+		if(editProfileButton!=null) editProfileButton.setOnClickListener(null);
+		// END
 		if(showUserTweetsButton!=null) showUserTweetsButton.setOnClickListener(null);
 		
 		unbindDrawables(findViewById(R.id.showUserRoot));
@@ -223,32 +248,30 @@ public class ShowUserActivity extends TwimightBaseActivity{
 
 		// do we have a profile image?
 		if(!c.isNull(c.getColumnIndex(TwitterUsers.COL_SCREENNAME))){
-			int userId = c.getInt(c.getColumnIndex("_id"));
-			Uri imageUri = Uri.parse("content://" +TwitterUsers.TWITTERUSERS_AUTHORITY + "/" + TwitterUsers.TWITTERUSERS + "/" + userId);
-			InputStream is;
-			
-			try {
-				is = getContentResolver().openInputStream(imageUri);
-				if (is != null) {						
-					Bitmap bm = BitmapFactory.decodeStream(is);
-					profileImage.setImageBitmap(bm);	
-				} else
-					profileImage.setImageResource(R.drawable.default_profile);
-			} catch (FileNotFoundException e) {
-				Log.e(TAG,"error opening input stream",e);
+			InternalStorageHelper helper = new InternalStorageHelper(this);
+			byte[] imageByteArray = helper.readImage(c.getString(c.getColumnIndex(TwitterUsers.COL_SCREENNAME)));
+			if (imageByteArray != null) {				
+				//is = context.getContentResolver().openInputStream(uri);				
+				Bitmap bm = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.length);
+				profileImage.setImageBitmap(bm);	
+			} else
 				profileImage.setImageResource(R.drawable.default_profile);
-			}	
 		}
 		userScreenName = c.getString(c.getColumnIndex(TwitterUsers.COL_SCREENNAME)); 
-		screenName.setText("@" + userScreenName);
+ 	   // VICDATA remove '@' prefix
+		screenName.setText(userScreenName);
+//		screenName.setText("@" + userScreenName);
+		// END
 		realName.setText(c.getString(c.getColumnIndex(TwitterUsers.COL_NAME)));
 
-		if(c.getColumnIndex(TwitterUsers.COL_LOCATION) >=0){
-			location.setText(c.getString(c.getColumnIndex(TwitterUsers.COL_LOCATION)));
-			location.setVisibility(TextView.VISIBLE);
-		} else {
-			location.setVisibility(TextView.GONE);
-		}
+		// VICDATA don't show location.
+//		if(c.getColumnIndex(TwitterUsers.COL_LOCATION) >=0){
+//			location.setText(c.getString(c.getColumnIndex(TwitterUsers.COL_LOCATION)));
+//			location.setVisibility(TextView.VISIBLE);
+//		} else {
+//			location.setVisibility(TextView.GONE);
+//		}
+		//
 
 		if(c.getColumnIndex(TwitterUsers.COL_DESCRIPTION) >=0){
 			String tmp = c.getString(c.getColumnIndex(TwitterUsers.COL_DESCRIPTION));
@@ -294,7 +317,9 @@ public class ShowUserActivity extends TwimightBaseActivity{
 				}
 
 			});
-			showUserTweetsButton.setVisibility(Button.VISIBLE);
+			// VICDATA don't display Tweets button.
+//			showUserTweetsButton.setVisibility(Button.VISIBLE);
+			// END
 		} else {
 			showUserTweetsButton.setVisibility(Button.GONE);
 		}
@@ -307,11 +332,15 @@ public class ShowUserActivity extends TwimightBaseActivity{
 		
 		// disable the normal user buttons
 		LinearLayout remoteUserButtons = (LinearLayout) findViewById(R.id.showUserButtons);
-		remoteUserButtons.setVisibility(LinearLayout.GONE);
+		if (remoteUserButtons != null) {
+			remoteUserButtons.setVisibility(LinearLayout.GONE);
+		}
 
 		// enable the show followers and show followee's buttons
 		LinearLayout localUserButtons = (LinearLayout) findViewById(R.id.showLocalUserButtons);
-		localUserButtons.setVisibility(LinearLayout.VISIBLE);
+		if (localUserButtons != null) {
+			localUserButtons.setVisibility(LinearLayout.VISIBLE);
+		}
 		
 		// the followers Button
 		showFollowersButton.setOnClickListener(null);
@@ -320,13 +349,13 @@ public class ShowUserActivity extends TwimightBaseActivity{
 			@Override
 			public void onClick(View v) {				
 				Intent i = new Intent(getBaseContext(), ShowUserListActivity.class);
-				i.putExtra(ShowUserListActivity.USER_FILTER_REQUEST,ShowUserListActivity.FOLLOWERS_KEY 	);
+				i.putExtra("filter", ShowUserListActivity.SHOW_FOLLOWERS);
 				startActivity(i);
 
 			}
 
 		});
-
+		
 		// the followees Button
 		showFriendsButton.setOnClickListener(null);
 		showFriendsButton.setOnClickListener(new OnClickListener(){
@@ -334,23 +363,53 @@ public class ShowUserActivity extends TwimightBaseActivity{
 			@Override
 			public void onClick(View v) {				
 				Intent i = new Intent(getBaseContext(), ShowUserListActivity.class);
-				i.putExtra(ShowUserListActivity.USER_FILTER_REQUEST,ShowUserListActivity.FRIENDS_KEY );
+				i.putExtra("filter", ShowUserListActivity.SHOW_FRIENDS);
 				startActivity(i);
 			}
 
 		});
 		
-		showDisPeersButton.setOnClickListener(new OnClickListener(){
+		// VICDATA edit my profile
+		editProfileButton.setOnClickListener(null);
+		editProfileButton.setOnClickListener(new OnClickListener(){
 			@Override
 			public void onClick(View v) {
+
+				Uri uri = Uri.parse("content://"+TwitterUsers.TWITTERUSERS_AUTHORITY+"/"+TwitterUsers.TWITTERUSERS);
+				Cursor c = getContentResolver().query(uri, null, TwitterUsers.COL_ID+"="+LoginActivity.getTwitterId(getBaseContext()), null, null);
+				if(c.getCount()!=1) return;
+				c.moveToFirst();
+				int rowId = c.getInt(c.getColumnIndex("_id"));
 				
-				Intent i = new Intent(getBaseContext(), ShowUserListActivity.class);
-				i.putExtra(ShowUserListActivity.USER_FILTER_REQUEST,ShowUserListActivity.PEERS_KEY );
-				startActivity(i);
-
+				if(rowId>0){
+					// show the local user
+					Intent i = new Intent(getBaseContext(), EditProfileActivity.class);
+					i.putExtra("rowId", rowId);
+					startActivity(i);
+				}
+				c.close();
+//				
+//				Intent i = new Intent(getBaseContext(), EditProfileActivity.class);
+//				startActivity(i);
+//				finish();
 			}
-
 		});
+		// END
+
+		
+		// VICDATA not used buttons
+//		showDisPeersButton.setOnClickListener(new OnClickListener(){
+//			@Override
+//			public void onClick(View v) {
+//				
+//				Intent i = new Intent(getBaseContext(), ShowUserListActivity.class);
+//				i.putExtra("filter", ShowUserListActivity.SHOW_DISASTER_PEERS);
+//				startActivity(i);
+//
+//			}
+//
+//		});
+		// END
 	}
 
 	/**
@@ -369,9 +428,9 @@ public class ShowUserActivity extends TwimightBaseActivity{
 		 */
 		following = c.getInt(c.getColumnIndex(TwitterUsers.COL_ISFRIEND))>0;
 		if(following){
-			followButton.setText("Unfollow");
+			followButton.setText(R.string.button_unfollow);
 		} else {
-			followButton.setText("Follow");
+			followButton.setText(R.string.button_follow);
 		}
 		// listen to clicks		
 		followButton.setOnClickListener(new OnClickListener(){
@@ -436,7 +495,10 @@ public class ShowUserActivity extends TwimightBaseActivity{
 			@Override
 			public void onClick(View v) {
 				Intent i = new Intent(getBaseContext(),NewTweetActivity.class);
-				i.putExtra("text", "@"+userScreenName+" ");
+        	   // VICDATA removed '@' prefix
+				i.putExtra("text", userScreenName+" ");
+//				i.putExtra("text", "@"+userScreenName+" ");
+				// END
 				startActivity(i);
 			}
 		});
@@ -500,7 +562,6 @@ public class ShowUserActivity extends TwimightBaseActivity{
 
 		@Override
 		public void onChange(boolean selfChange) {
-			
 			super.onChange(selfChange);
 			
 			// and get a new one

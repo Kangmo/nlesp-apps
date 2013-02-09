@@ -1,6 +1,5 @@
 package ch.ethz.twimight.activities;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,45 +19,48 @@ public class ConditionsActivity extends Activity {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-		boolean termsAccepted = settings.getBoolean(TERMS, false);			
-			
-		if (termsAccepted) {
-			startLogin();
-			
-		} else {
-			
-			setContentView(R.layout.show_conditions);
-
+		boolean termsAccepted = settings.getBoolean(TERMS, false);		  
 		
-			Button buttonAgree = (Button)findViewById(R.id.buttonAgree);
-			
-			
-			
-			buttonAgree.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View arg0) {
-					SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ConditionsActivity.this);
-					SharedPreferences.Editor editor = settings.edit();
-					editor.putBoolean(TERMS, true);
-					editor.commit();  
-					
-					setContentView(R.layout.show_tips);
-					Button buttonSkip = (Button)findViewById(R.id.buttonSkip);
-					buttonSkip.setOnClickListener(new OnClickListener() {
-
-						@Override
-						public void onClick(View v) {
-							startLogin();
-							
-						}
-						
-						
-					});
-					
-				}			
-			});
-			
-		}
+		// VICDATA skip UIs for accepting terms.
+		startLogin();
+//		if (termsAccepted) {
+//			startLogin();
+//			
+//		} else {
+//			
+//			setContentView(R.layout.show_conditions);
+//
+//		
+//			Button buttonAgree = (Button)findViewById(R.id.buttonAgree);
+//			
+//			
+//			
+//			buttonAgree.setOnClickListener(new OnClickListener() {
+//				@Override
+//				public void onClick(View arg0) {
+//					SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ConditionsActivity.this);
+//					SharedPreferences.Editor editor = settings.edit();
+//					editor.putBoolean(TERMS, true);
+//					editor.commit();  
+//					
+//					setContentView(R.layout.show_raffle);
+//					Button buttonSkip = (Button)findViewById(R.id.buttonSkip);
+//					buttonSkip.setOnClickListener(new OnClickListener() {
+//
+//						@Override
+//						public void onClick(View v) {
+//							startLogin();
+//							
+//						}
+//						
+//						
+//					});
+//					
+//				}			
+//			});
+//			
+//		}
+		// END
 
 		
 	}

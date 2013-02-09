@@ -180,31 +180,31 @@ public class TDSAlarm extends BroadcastReceiver {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {				
-					int attempts = 0;
-					while(PreferenceManager.getDefaultSharedPreferences(context).getString("mac", null) == null && attempts <= 3){
-						BluetoothAdapter.getDefaultAdapter().enable();
-						try {
-							Thread.sleep(5000);
-						} catch (InterruptedException e) {
-							Log.e(TAG, "error while waiting for Bluetooth");
-						}
-						// can we now get an address?
-						getMacFromAdapter(context);
-						attempts++;
-					}
-					BluetoothAdapter.getDefaultAdapter().disable();
-
-					if(PreferenceManager.getDefaultSharedPreferences(context).getString("mac", null) != null && 
-							PreferenceManager.getDefaultSharedPreferences(context).getBoolean("prefTDSCommunication", Constants.TDS_DEFAULT_ON) == true ){
-						// Request the sync
-						Intent synchIntent = new Intent(context, TDSService.class);
-						synchIntent.putExtra("synch_request", TDSService.SYNCH_ALL);
-						context.startService(synchIntent);
-					} else {
-						Log.e(TAG, "Sometimes everything goes wrong. Can't obtain a MAC address, rescheduling now.");
-						scheduleCommunication(context, Constants.TDS_UPDATE_INTERVAL);
-					}
-				
+//					int attempts = 0;
+//					while(PreferenceManager.getDefaultSharedPreferences(context).getString("mac", null) == null && attempts <= 3){
+//						BluetoothAdapter.getDefaultAdapter().enable();
+//						try {
+//							Thread.sleep(5000);
+//						} catch (InterruptedException e) {
+//							Log.e(TAG, "error while waiting for Bluetooth");
+//						}
+//						// can we now get an address?
+//						getMacFromAdapter(context);
+//						attempts++;
+//					}
+//					BluetoothAdapter.getDefaultAdapter().disable();
+//
+//					if(PreferenceManager.getDefaultSharedPreferences(context).getString("mac", null) != null && 
+//							PreferenceManager.getDefaultSharedPreferences(context).getBoolean("prefTDSCommunication", Constants.TDS_DEFAULT_ON) == true ){
+//						// Request the sync
+//						Intent synchIntent = new Intent(context, TDSService.class);
+//						synchIntent.putExtra("synch_request", TDSService.SYNCH_ALL);
+//						context.startService(synchIntent);
+//					} else {
+//						Log.e(TAG, "Sometimes everything goes wrong. Can't obtain a MAC address, rescheduling now.");
+//						scheduleCommunication(context, Constants.TDS_UPDATE_INTERVAL);
+//					}
+//				
 			}
 		}).start();
 

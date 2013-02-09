@@ -13,7 +13,6 @@
 
 package ch.ethz.twimight.activities;
 
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -49,7 +48,7 @@ import ch.ethz.twimight.util.Constants;
  * @author thossmann
  * @author pcarta
  */
-public class NewTweetActivity extends Activity{
+public class NewTweetActivity extends TwimightBaseActivity{
 
 	private static final String TAG = "TweetActivity";
 	
@@ -83,8 +82,6 @@ public class NewTweetActivity extends Activity{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.tweet);
 		
-		
-		
 		//Statistics
 		locDBHelper = new StatisticsDBHelper(this);
 		locDBHelper.open();
@@ -92,7 +89,7 @@ public class NewTweetActivity extends Activity{
 		locHelper = new LocationHelper(this);
 
 		//
-		cancelButton = (Button) findViewById(R.id.tweet_cancel);		
+		cancelButton = (Button) findViewById(R.id.tweet_cancel);
 		cancelButton.setOnClickListener(new OnClickListener(){
 
 			@Override
@@ -102,12 +99,25 @@ public class NewTweetActivity extends Activity{
 			
 		});
 		
+		Intent i = getIntent();
+		final Long onwerId = i.getLongExtra("tweet_owner_id", 0L);
+		final Long originalTweetId = i.getLongExtra("original_tweet_id", 0L);
+		if(i.hasExtra("isReplyTo")){
+			isReplyTo = i.getLongExtra("isReplyTo", 0);
+		}
+		
 		sendButton = (Button) findViewById(R.id.tweet_send);
 		sendButton.setOnClickListener(new OnClickListener(){
 
 			@Override
 			public void onClick(View v) {
-				new SendTweetTask().execute();				
+				// VICDATA SendCommentTask was added.
+				if (isReplyTo == 0) {
+					new SendTweetTask().execute();
+				} else {
+					new SendCommentTask().execute(onwerId, originalTweetId);
+				}
+				// END
 			}
 			
 		});
@@ -118,7 +128,6 @@ public class NewTweetActivity extends Activity{
 		text = (EditText) findViewById(R.id.tweetText);
 		
 		// Did we get some extras in the intent?
-		Intent i = getIntent();
 		if(i.hasExtra("text")){
 			text.setText(Html.fromHtml("<i>"+i.getStringExtra("text")+"</i>"));
 		}
@@ -134,26 +143,24 @@ public class NewTweetActivity extends Activity{
 		
 		characters.setText(Integer.toString(Constants.TWEET_LENGTH-text.getText().length()));
 
-		if(i.hasExtra("isReplyTo")){
-			isReplyTo = i.getLongExtra("isReplyTo", 0);
-		}
-		
 		// This makes sure we do not enter more than 140 characters	
 		textWatcher = new TextWatcher(){
 		    public void afterTextChanged(Editable s){
 		    	int nrCharacters = Constants.TWEET_LENGTH-text.getText().length();
 		    	
-		    	if(nrCharacters < 0){
-		    		text.setText(text.getText().subSequence(0, Constants.TWEET_LENGTH));
-		    		text.setSelection(text.getText().length());
-		    		nrCharacters = Constants.TWEET_LENGTH-text.getText().length();
-		    	}
-		    	
-		    	if(nrCharacters <= 0){
-		    		characters.setTextColor(Color.RED);
-		    	} else {
-		    		characters.setTextColor(Color.BLACK);
-		    	}
+				// VICDATA vkit does not limit body length.  
+//		    	if(nrCharacters < 0){
+//		    		text.setText(text.getText().subSequence(0, Constants.TWEET_LENGTH));
+//		    		text.setSelection(text.getText().length());
+//		    		nrCharacters = Constants.TWEET_LENGTH-text.getText().length();
+//		    	}
+//		    	
+//		    	if(nrCharacters <= 0){
+//		    		characters.setTextColor(Color.RED);
+//		    	} else {
+//		    		characters.setTextColor(Color.BLACK);
+//		    	}
+				// END
 		    	
 		    	if(nrCharacters == Constants.TWEET_LENGTH){
 		    		sendButton.setEnabled(false);
@@ -254,7 +261,7 @@ public class NewTweetActivity extends Activity{
 		text = null;
 		textWatcher = null;
 		
-		//unbindDrawables(findViewById(R.id.showNewTweetRoot));
+		unbindDrawables(findViewById(R.id.showNewTweetRoot));
 	}
 	
 	/**	
@@ -325,6 +332,57 @@ public class NewTweetActivity extends Activity{
 		}
 	}
 	
+	private class SendCommentTask extends AsyncTask<Object, Void, Boolean>{
+		String comment = null;
+		Long tweetOwnerId;
+		Long originalTweetId;
+		
+		@Override
+		protected Boolean doInBackground(Object... params) {
+			boolean result=false;
+			tweetOwnerId = (Long)params[0];
+			originalTweetId = (Long)params[1];
+			
+			timestamp = System.currentTimeMillis();
+			if (locHelper != null && locHelper.count > 0 && locDBHelper != null) {	
+				Log.i(TAG,"writing log");
+				locDBHelper.insertRow(locHelper.loc, cm.getActiveNetworkInfo().getTypeName(), ShowTweetListActivity.TWEET_WRITTEN, null, timestamp);
+				locHelper.unRegisterLocationListener();
+			}
+			// if no connectivity, notify user that the tweet will be send later		
+				
+			ContentValues cv = createContentValues(); 
+			
+			// our own tweets go into the timeline buffer
+			cv.put(Tweets.COL_BUFFER, Tweets.BUFFER_TIMELINE);
+
+			comment = text.getText().toString();
+			
+			ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+			if(cm.getActiveNetworkInfo()==null || !cm.getActiveNetworkInfo().isConnected()){
+				result=true;
+			}
+
+			return result;
+		}
+
+		@Override
+		protected void onPostExecute(Boolean result){
+			if (result)
+				Toast.makeText(NewTweetActivity.this, "No connectivity, your Tweet will be uploaded to Twitter once we have a connection!", Toast.LENGTH_SHORT).show();
+			
+			if(comment != null){
+				// schedule the tweet for uploading to twitter
+				Intent i = new Intent(NewTweetActivity.this, TwitterService.class);
+				i.putExtra("synch_request", TwitterService.SEND_COMMENT);
+				i.putExtra("tweet_id", originalTweetId);
+				i.putExtra("comment", comment);
+				i.putExtra("tweet_owner_id", tweetOwnerId);
+				startService(i);
+			}
+			finish();
+		}
+	}
 	
 	
 	/**

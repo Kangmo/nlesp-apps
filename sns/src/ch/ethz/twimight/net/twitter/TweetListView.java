@@ -1,11 +1,11 @@
 package ch.ethz.twimight.net.twitter;
 
-import ch.ethz.twimight.util.Constants;
 import android.content.Context;
 import android.content.Intent;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.ListView;
+import ch.ethz.twimight.util.Constants;
 
 public class TweetListView extends ListView {
 	private final String TAG = "TweetListView";
@@ -27,14 +27,12 @@ public class TweetListView extends ListView {
 		this.context = context;
 	}
 	
-	public void setOverscrollIntent(Intent i){			
+	public void setOverscrollIntent(Intent i){		
 		overscrollIntent = i;
 	}
 
-	private void sendOverscrollIntent(boolean topOverscroll){	
-		
-		if(overscrollIntent!=null ) {
-			Log.i(TAG, "calling twitter service");
+	private void sendOverscrollIntent(boolean topOverscroll){		
+		if(overscrollIntent!=null && context!=null) {
 			if (topOverscroll) {
 				overscrollIntent.putExtra(TwitterService.OVERSCROLL_TYPE, TwitterService.OVERSCROLL_TOP);
 				if (Constants.TIMELINE_BUFFER_SIZE >= 150)
@@ -47,8 +45,7 @@ public class TweetListView extends ListView {
 			}
 			context.startService(overscrollIntent);
 			
-		} else
-			Log.i(TAG, "intent null");
+		}
 	}
 		/*
 	 * 

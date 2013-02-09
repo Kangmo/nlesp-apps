@@ -23,7 +23,6 @@ import org.spongycastle.util.encoders.Base64;
 import android.app.AlarmManager;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.ContentValues;
 import android.content.Context;
@@ -61,8 +60,10 @@ public class ScanningService extends Service{
 	// manage bluetooth communication
 	public static BluetoothComms bluetoothHelper = null;
 
-	//private Date lastScan;			
-	private MacsDBHelper dbHelper;	
+	//private Date lastScan;
+			
+	private MacsDBHelper dbHelper;
+	
 	private static Context context = null;
 	
 	private Cursor cursor;
@@ -363,7 +364,31 @@ public class ScanningService extends Service{
 		}
 	};
 
+	/**
+	 * send tweets and direct messages over bluetooth
+	 * @author pcarta
+	 */
+	private class SendDisasterData extends AsyncTask<Long, Void, Void> {
+		
+		String mac;
+		
+		public SendDisasterData(String mac) {
+			this.mac=mac;
+		}
 
+		@Override
+		protected Void doInBackground(Long... last) {
+			sendDisasterTweets(last[0]);
+			sendDisasterDM(last[0]);			
+			dbHelper.setLastSuccessful(mac, new Date());
+			synchronized(ScanningService.this){
+				Log.i(TAG, "sending closing request");
+				bluetoothHelper.write("####CLOSING_REQUEST####");
+				closing_request_sent=true;
+			}
+			return null;
+		}
+	}
 	
 	/**
 	 * process all the data received via bluetooth
@@ -375,7 +400,7 @@ public class ScanningService extends Service{
 		protected Void doInBackground(String... s) {								
 			JSONObject o;
 			try {
-				
+				Log.i(TAG, "s: " + s[0]);
 				o = new JSONObject(s[0]);
 				if (o.getInt(TYPE) == TWEET) {
 					
@@ -639,6 +664,11 @@ public class ScanningService extends Service{
 		
 		if(o.has(Tweets.COL_SOURCE))
 			cv.put(Tweets.COL_SOURCE, o.getString(Tweets.COL_SOURCE));
+		
+		// VICDATA include retweetcount as well
+		if(o.has(Tweets.COL_RETWEETCOUNT))
+			cv.put(Tweets.COL_RETWEETCOUNT, o.getLong(Tweets.COL_RETWEETCOUNT));
+		// END
 		
 		if(o.has(TwitterUsers.COL_SCREENNAME)) {			
 			cv.put(Tweets.COL_SCREENNAME, o.getString(TwitterUsers.COL_SCREENNAME));

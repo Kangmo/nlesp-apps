@@ -12,7 +12,6 @@
  ******************************************************************************/
 package ch.ethz.twimight.activities;
 
-import android.app.ActionBar;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
@@ -55,7 +54,7 @@ public class PrefsActivity extends PreferenceActivity{
 	@Override
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		addPreferencesFromResource(R.xml.prefs);		
+		addPreferencesFromResource(R.xml.prefs);
 		
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		
@@ -68,16 +67,13 @@ public class PrefsActivity extends PreferenceActivity{
 					if(preferences.getBoolean("prefDisasterMode", Constants.DISASTER_DEFAULT_ON) == true){
 						
 						if (LoginActivity.getTwitterId(getBaseContext())!= null && LoginActivity.getTwitterScreenname(getBaseContext()) != null) {
-							enableDisasterMode(); 							
-							// Are we in disaster mode?		
-								
+							enableDisasterMode(); 								
 						} 
 						
-					} else {						
+					} else {
 						disableDisasterMode(getBaseContext());						
 						finish();						
 					}
-					
 				} else if(key.equals("prefTDSCommunication")){
 					
 					// toggle TDS communication
@@ -146,7 +142,9 @@ public class PrefsActivity extends PreferenceActivity{
 		} else {
 			new ScanningAlarm(getApplicationContext(),0,true);
 			finish();
-		}		
+		}
+				 
+		
 	}
 	
 	private static boolean getBluetoothInitialState(Context context) {

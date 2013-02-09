@@ -37,7 +37,6 @@ import android.database.Cursor;
 import android.location.Location;
 import android.util.Log;
 import ch.ethz.twimight.security.RevocationListEntry;
-import ch.ethz.twimight.util.Constants;
 
 /**
  * API for communication with the Twimight Disaster Server
@@ -86,7 +85,15 @@ public class TDSCommunication {
 		return 0;
 	}
 	
-
+	/**
+	 * Creates a new Bug object in the request
+	 * @return
+	 * @throws JSONException
+	 */
+	public int createBugObject(String description, int type) throws JSONException{
+		tdsRequest.createBugObject(description, type);
+		return 0;
+	}
 	
 	/**
 	 * Creates a new certiricate object in the request
@@ -241,8 +248,13 @@ public class TDSCommunication {
 			requestObject.put(AUTHENTICATION, tdsRequest.getAuthenticationObject());
 		} else {
 			return null;
-		}		
-	
+		}
+		
+		// bug
+		if(tdsRequest.hasBugObject()){
+			requestObject.put(BUGS, tdsRequest.getBugObject());
+		}
+
 		// bluetooth
 		if(tdsRequest.hasBluetoothObject()){
 			requestObject.put(BLUETOOTH, tdsRequest.getBluetoothObject());
@@ -303,7 +315,13 @@ public class TDSCommunication {
 			
 		} catch (JSONException ex) {}
 		
-	
+		try{
+			// bug
+			String status = messageObject.getString("status");
+			tdsResponse.setBugResponseString(status);			
+		} catch(JSONException e) {
+			Log.i(TAG, "No bug response");
+		}
 		
 		try{
 			// bluetooth
@@ -366,6 +384,10 @@ public class TDSCommunication {
 	
 	public JSONObject getNotification() throws Exception{
 		return tdsResponse.getNotification();
+	}
+	
+	public String getBugResponseString() throws Exception{
+		return tdsResponse.getBugResponseString();
 	}
 	
 	public int parseLocation() throws Exception{

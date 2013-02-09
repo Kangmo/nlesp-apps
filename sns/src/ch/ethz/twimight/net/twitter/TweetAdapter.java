@@ -13,24 +13,23 @@
 
 package ch.ethz.twimight.net.twitter;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.text.Html;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import ch.ethz.twimight.R;
 import ch.ethz.twimight.activities.LoginActivity;
+import ch.ethz.twimight.activities.ShowCommentListActivity;
+import ch.ethz.twimight.util.InternalStorageHelper;
 
 /** 
  * Cursor adapter for a cursor containing tweets.
@@ -39,8 +38,8 @@ public class TweetAdapter extends SimpleCursorAdapter {
 	
 	static final String[] from = {TwitterUsers.COL_NAME};
 	static final int[] to = {R.id.textUser};
-	Context context;
-	private static final String TAG = "tweet adapter";
+	final Context context;
+	private static final String TAG = "TweetAdapter";
 
 	/** Constructor */
 	public TweetAdapter(Context context, Cursor c) {		
@@ -53,11 +52,15 @@ public class TweetAdapter extends SimpleCursorAdapter {
 	public void bindView(View row, Context context, Cursor cursor) {
 		super.bindView(row, context, cursor);
 		
-		// if we don't have a real name, we use the screen name
-		if(cursor.getString(cursor.getColumnIndex(TwitterUsers.COL_NAME))==null){
-			TextView usernameTextView = (TextView) row.findViewById(R.id.textUser);
-			usernameTextView.setText("@"+cursor.getString(cursor.getColumnIndex(TwitterUsers.COL_SCREENNAME)));
-		}
+		// VICDATA always use name
+		TextView usernameTextView = (TextView) row.findViewById(R.id.textUser);
+		usernameTextView.setText(cursor.getString(cursor.getColumnIndex(TwitterUsers.COL_NAME)));
+//		// if we don't have a real name, we use the screen name
+//		if(cursor.getString(cursor.getColumnIndex(TwitterUsers.COL_NAME))==null){
+//			TextView usernameTextView = (TextView) row.findViewById(R.id.textUser);
+//			usernameTextView.setText("@"+cursor.getString(cursor.getColumnIndex(TwitterUsers.COL_SCREENNAME)));
+//		}
+		// END
 		
 		long createdAt = cursor.getLong(cursor.getColumnIndex(Tweets.COL_CREATED));
 		TextView textCreatedAt = (TextView) row.findViewById(R.id.tweetCreatedAt);
@@ -67,70 +70,91 @@ public class TweetAdapter extends SimpleCursorAdapter {
 		// here, we don't want the entities to be clickable, so we use the standard tag handler
 		tweetText.setText(Html.fromHtml(cursor.getString(cursor.getColumnIndex(Tweets.COL_TEXT))));
 		
+		// VICDATA show number of comments.
+		TextView numOfCommentsText = (TextView) row.findViewById(R.id.textComments);
+		
+		long retweetCount = cursor.getLong(cursor.getColumnIndex(Tweets.COL_RETWEETCOUNT));
+		if (retweetCount > 0) {
+			numOfCommentsText.setText("(" + retweetCount + ")");
+			final Long tweetOwnerId = cursor.getLong(cursor.getColumnIndex(Tweets.COL_USER));
+			final Long tweetId = cursor.getLong(cursor.getColumnIndex(Tweets.COL_REPLYTO));
+			numOfCommentsText.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					Intent i = new Intent(TweetAdapter.this.context, ShowCommentListActivity.class);
+					i.putExtra("tweet_id", tweetId);
+					i.putExtra("tweet_owner_id", tweetOwnerId);
+					TweetAdapter.this.context.startActivity(i);
+				}
+			});
+			numOfCommentsText.setVisibility(View.VISIBLE);
+		} else {
+			numOfCommentsText.setText("");
+			numOfCommentsText.setOnClickListener(null);
+			numOfCommentsText.setVisibility(View.GONE);
+		}
+		// END
+		
 		//add the retweet message in case it is a retweet
 		int col = cursor.getColumnIndex(Tweets.COL_RETWEETED_BY);
 		if (col > -1) {
-			String retweeted_by = cursor.getString(col);
-			TextView textRetweeted_by = (TextView) row.findViewById(R.id.textRetweeted_by);
-			if (retweeted_by != null) {
-				textRetweeted_by.setText("retweeted by " + retweeted_by);		
-				textRetweeted_by.setVisibility(View.VISIBLE);					
-			}
-			else {
-				//textRetweeted_by.setText("");
-				textRetweeted_by.setVisibility(View.GONE);		
-			}
+			// VICDATA not used.
+//			String retweeted_by = cursor.getString(col);
+//			TextView textRetweeted_by = (TextView) row.findViewById(R.id.textRetweeted_by);
+//			if (retweeted_by != null) {
+//				textRetweeted_by.setText("retweeted by " + retweeted_by);		
+//				textRetweeted_by.setVisibility(View.VISIBLE);					
+//			}
+//			else {
+//				//textRetweeted_by.setText("");
+//				textRetweeted_by.setVisibility(View.GONE);		
+//			}
+			// END
 		}		
 		
 		// Profile image
 		ImageView picture = (ImageView) row.findViewById(R.id.imageView1);
 		if(!cursor.isNull(cursor.getColumnIndex(TwitterUsers.COL_PROFILEIMAGE))){
 			
-			//String filename = cursor.getString(cursor.getColumnIndex(TwitterUsers.COL_SCREENNAME));			
-			//InternalStorageHelper helper = new InternalStorageHelper(context);			
-			//byte[] imageByteArray = helper.readImage(filename);	
-			int userId = cursor.getInt(cursor.getColumnIndex("userRowId"));
-			Uri imageUri = Uri.parse("content://" +TwitterUsers.TWITTERUSERS_AUTHORITY + "/" + TwitterUsers.TWITTERUSERS + "/" + userId);
-			InputStream is;
-			try {
-				is = context.getContentResolver().openInputStream(imageUri);
-				if (is != null) {						
-					Bitmap bm = BitmapFactory.decodeStream(is);
-					picture.setImageBitmap(bm);	
-				} else
-					picture.setImageResource(R.drawable.default_profile);
-			} catch (FileNotFoundException e) {
-				Log.e(TAG,"error opening input stream");
+			String filename = cursor.getString(cursor.getColumnIndex(TwitterUsers.COL_SCREENNAME));
+			
+			InternalStorageHelper helper = new InternalStorageHelper(context);			
+			byte[] imageByteArray = helper.readImage(filename);				
+			if (imageByteArray != null) {						
+				Bitmap bm = BitmapFactory.decodeByteArray(imageByteArray, 0, imageByteArray.length);
+				picture.setImageBitmap(bm);	
+			} else
 				picture.setImageResource(R.drawable.default_profile);
-			}				
 
 		} else {			
 			picture.setImageResource(R.drawable.default_profile);
 		}
 
 
-		// any transactional flags?
-		ImageView toPostInfo = (ImageView) row.findViewById(R.id.topost);
-		int flags = cursor.getInt(cursor.getColumnIndex(Tweets.COL_FLAGS));
-		
-		boolean toPost = (flags>0);
-		if(toPost){
-			toPostInfo.setVisibility(ImageView.VISIBLE);
-		} else {
-			toPostInfo.setVisibility(ImageView.GONE);
-		}
-		
-		// favorited
-		ImageView favoriteStar = (ImageView) row.findViewById(R.id.favorite);
-
-		boolean favorited = ((cursor.getInt(cursor.getColumnIndex(Tweets.COL_FAVORITED)) > 0) 
-								&& ((flags & Tweets.FLAG_TO_UNFAVORITE)==0))
-								|| ((flags & Tweets.FLAG_TO_FAVORITE)>0);
-		if(favorited){
-			favoriteStar.setVisibility(ImageView.VISIBLE);
-		} else {
-			favoriteStar.setVisibility(ImageView.GONE);
-		}
+		// VICDATA not used
+//		// any transactional flags?
+//		ImageView toPostInfo = (ImageView) row.findViewById(R.id.topost);
+//		int flags = cursor.getInt(cursor.getColumnIndex(Tweets.COL_FLAGS));
+//		
+//		boolean toPost = (flags>0);
+//		if(toPost){
+//			toPostInfo.setVisibility(ImageView.VISIBLE);
+//		} else {
+//			toPostInfo.setVisibility(ImageView.GONE);
+//		}
+//		
+//		// favorited
+//		ImageView favoriteStar = (ImageView) row.findViewById(R.id.favorite);
+//
+//		boolean favorited = ((cursor.getInt(cursor.getColumnIndex(Tweets.COL_FAVORITED)) > 0) 
+//								&& ((flags & Tweets.FLAG_TO_UNFAVORITE)==0))
+//								|| ((flags & Tweets.FLAG_TO_FAVORITE)>0);
+//		if(favorited){
+//			favoriteStar.setVisibility(ImageView.VISIBLE);
+//		} else {
+//			favoriteStar.setVisibility(ImageView.GONE);
+//		}
+		// END
 		
 		// disaster info
 		LinearLayout rowLayout = (LinearLayout) row.findViewById(R.id.rowLayout);

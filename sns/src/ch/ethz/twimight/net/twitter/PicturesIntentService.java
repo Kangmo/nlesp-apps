@@ -1,10 +1,7 @@
 package ch.ethz.twimight.net.twitter;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -13,12 +10,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
+import com.thksoft.vicdata.VdUtil;
+
 import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
 import ch.ethz.twimight.activities.ShowUserListActivity;
 import ch.ethz.twimight.util.InternalStorageHelper;
@@ -39,14 +37,15 @@ public class PicturesIntentService extends IntentService {
 
 	@Override
 	protected void onHandleIntent(Intent intent) {		
-		
 		ShowUserListActivity.setLoading(true);
 		rowIds = intent.getLongArrayExtra(PicturesIntentService.USERS_IDS);
 		downloadProfilePictures(rowIds);
-		insertPictures();		
+		insertPictures();
+		
 		ShowUserListActivity.setLoading(false);
 
-	}	
+	}
+	
 	
 
 	private void insertPictures() {	
@@ -58,13 +57,12 @@ public class PicturesIntentService extends IntentService {
 		for (int i=0; i<cv.length; i++) {				
 															
 			insertProfileImageIntoInternalStorage(pictures.get(i),screenNames.get(i));
-			//cursorArray[i].getInt(cursorArray[i].getColumnIndex("_id"));
 			
 			cv[i]= new ContentValues();
 			cv[i].put("_id", rowIds[i]);
 			if (!cursorArray[i].isClosed()) {
 				cv[i].put(TwitterUsers.COL_FLAGS, ~(TwitterUsers.FLAG_TO_UPDATEIMAGE) & cursorArray[i].getInt(cursorArray[i].getColumnIndex(TwitterUsers.COL_FLAGS)));
-				cv[i].put(TwitterUsers.COL_PROFILEIMAGE, new File(getFilesDir(),screenNames.get(i)).getPath() );				
+				cv[i].put(TwitterUsers.COL_PROFILEIMAGE,screenNames.get(i) );				
 				cv[i].put(TwitterUsers.COL_LAST_PICTURE_UPDATE, System.currentTimeMillis());	
 				cursorArray[i].close();
 			}				
@@ -139,8 +137,13 @@ public class PicturesIntentService extends IntentService {
 			if(cursorArray[i].isNull(cursorArray[i].getColumnIndex(TwitterUsers.COL_IMAGEURL))){
 				cursorArray[i].close();					
 				continue;
-			} else 
+			} else  {
 				imageUrl = cursorArray[i].getString(cursorArray[i].getColumnIndex(TwitterUsers.COL_IMAGEURL));
+				// VICDATA append access token.
+				getBaseContext();
+				imageUrl += VdUtil.getAccessToken();
+				// END
+			}
 			
 			HttpGet mHttpGet = new HttpGet(imageUrl);
 			HttpResponse mHttpResponse;

@@ -16,6 +16,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+import ch.ethz.twimight.activities.FeedbackActivity;
 import ch.ethz.twimight.net.twitter.DirectMessages;
 import ch.ethz.twimight.net.twitter.Tweets;
 import ch.ethz.twimight.net.twitter.TwitterUsers;
@@ -38,7 +39,7 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 	public static final String TABLE_USERS = "users";
 	public static final String TABLE_DMS = "dms";
 //	static final String TABLE_HTML = "html";
-
+	public static final String TABLE_BUGS = "bugs";
 	private static final int DATABASE_VERSION = 43;
 
 	// Database creation sql statement
@@ -67,8 +68,12 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 			+ "_id integer primary key autoincrement not null, "
 			+ "serial string not null, "
 			+ "until integer not null);";
-	
-		
+
+	private static final String TABLE_BUGS_CREATE = "create table "+TABLE_BUGS+" ("
+			+ "_id integer primary key autoincrement not null, "
+			+ FeedbackActivity.COL_TWITTER_ID + " bigint not null, " 
+			+ FeedbackActivity.COL_TEXT + " string not null, "
+			+ FeedbackActivity.COL_TYPE + "type integer not null );";
 
 	private static final String TABLE_FRIENDS_KEYS_CREATE = "create table "+TABLE_FRIENDS_KEYS+" ("
 			+ "_id integer primary key autoincrement not null, "
@@ -94,7 +99,7 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 			+ Tweets.COL_RECEIVED + " integer, "
 			+ Tweets.COL_SOURCE + " string, "
 			+ Tweets.COL_FLAGS + " integer default 0, "
-			+ Tweets.COL_BUFFER + " integer default 0, "			
+			+ Tweets.COL_BUFFER + " integer default 0, "
 			+ Tweets.COL_ISDISASTER + " integer default 0, "
 			+ Tweets.COL_DISASTERID + " integer, "
 			+ Tweets.COL_ISVERIFIED + " integer, "
@@ -188,7 +193,8 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 		database.execSQL(TABLE_TWEETS_CREATE);
 		database.execSQL(TABLE_USERS_CREATE);
 		database.execSQL(TABLE_DMS_CREATE);
-	
+		database.execSQL(TABLE_BUGS_CREATE);
+		//database.execSQL(TABLE_HTML_CREATE);
 	}
 	
 	/**
@@ -208,15 +214,30 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 		Log.w(DBOpenHelper.class.getName(),
 				"Upgrading database from version " + oldVersion + " to "
 						+ newVersion + ", which will destroy all old data");
-		database.execSQL("DROP TABLE IF EXISTS "+TABLE_MACS);
-		database.execSQL("DROP TABLE IF EXISTS "+TABLE_LOCATIONS);
-		database.execSQL("DROP TABLE IF EXISTS "+TABLE_REVOCATIONS);
-		database.execSQL("DROP TABLE IF EXISTS "+TABLE_FRIENDS_KEYS);
-		database.execSQL("DROP TABLE IF EXISTS "+TABLE_TWEETS);
-		database.execSQL("DROP TABLE IF EXISTS "+TABLE_USERS);
-		database.execSQL("DROP TABLE IF EXISTS "+TABLE_DMS);
-		//database.execSQL("DROP TABLE IF EXISTS "+TABLE_HTML);
+		dropTables(database);
 		createTables(database);
+	}
+	
+	// VICDATA reset DB tables
+	public void resetTables() {
+		Log.w(DBOpenHelper.class.getName(), "VICDATA: recreate tables.");
+
+		SQLiteDatabase database = getWritableDatabase();
+		dropTables(database);
+		createTables(database);
+	}
+	// END
+
+	public void dropTables(SQLiteDatabase database) {
+		database.execSQL("DROP TABLE IF EXISTS " + TABLE_MACS);
+		database.execSQL("DROP TABLE IF EXISTS " + TABLE_LOCATIONS);
+		database.execSQL("DROP TABLE IF EXISTS " + TABLE_REVOCATIONS);
+		database.execSQL("DROP TABLE IF EXISTS " + TABLE_FRIENDS_KEYS);
+		database.execSQL("DROP TABLE IF EXISTS " + TABLE_TWEETS);
+		database.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
+		database.execSQL("DROP TABLE IF EXISTS " + TABLE_DMS);
+		database.execSQL("DROP TABLE IF EXISTS " + TABLE_BUGS);
+		// database.execSQL("DROP TABLE IF EXISTS "+TABLE_HTML);
 	}
 	
 	/**
@@ -232,6 +253,16 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 		database.execSQL("DELETE FROM "+TABLE_TWEETS);
 		database.execSQL("DELETE FROM "+TABLE_USERS);
 		database.execSQL("DELETE FROM "+TABLE_DMS);
+		database.execSQL("DELETE FROM "+TABLE_BUGS);
 		//database.execSQL("DELETE FROM "+TABLE_HTML);
 	}
+
+	// VICDATA reset timeline table
+	public void resetTimelineTable() {
+		SQLiteDatabase database = this.getWritableDatabase();
+		database.execSQL("DELETE FROM "+TABLE_TWEETS);
+//		database.execSQL("DROP TABLE IF EXISTS " + TABLE_TWEETS);
+//		database.execSQL(TABLE_TWEETS_CREATE);
+	}
+	// END
 }

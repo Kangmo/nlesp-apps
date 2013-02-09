@@ -21,7 +21,7 @@ public class InternalStorageHelper {
 	public boolean writeImage(byte[] image, String filename) {
 		FileOutputStream out = null ;
 		try {				
-			out = context.openFileOutput(filename, Context.MODE_PRIVATE);
+			out = context.openFileOutput(filename, Context.MODE_WORLD_READABLE);
 			out.write(image);			
 			return true;
 			
@@ -44,7 +44,6 @@ public class InternalStorageHelper {
 		
 	}
 	
-	/*
 	public byte[] readImage(String filename) {
 		FileInputStream fis = null;
 		try {
@@ -62,7 +61,7 @@ public class InternalStorageHelper {
 			        baf.append((byte) current);			
 			}	
 			return baf.toByteArray();
-			
+			*/
 		} catch (FileNotFoundException e) {			
 			Log.e(TAG,"file not found exception" );
 			return null;
@@ -79,7 +78,6 @@ public class InternalStorageHelper {
 		}
 	}
 	
-	*/
 	
 	    		
 			

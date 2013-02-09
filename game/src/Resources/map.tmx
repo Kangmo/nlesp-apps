@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="isometric" width="100" height="100" tilewidth="104" tileheight="52">
+ <tileset firstgid="1" name="cfw" tilewidth="104" tileheight="98">
+  <image source="타일맵/map.png" width="624" height="2000"/>
+ </tileset>
+ <tileset firstgid="121" name="ok" tilewidth="104" tileheight="98">
+  <image source="타일맵/object.png" width="624" height="2000"/>
+ </tileset>
+ <tileset firstgid="241" name="cewc" tilewidth="104" tileheight="98">
+  <image source="타일맵/object.png" width="624" height="2000"/>
+ </tileset>
+ <layer name="road" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJzt18tKA0EQBdDSKIiLJKBRRBKIrgTBx0Kj5v+/yyqmZbJw46YD5hy4FMxqqEu6JxHAX3xlzlpWbb5ktpm3zHJ/r3aQat+LGHqZZx7as5sYutFHX6+Z98xl5qLN+8xd5iP00ds6c5q53cnPOXUc+uitzqna+3Pmqc3qoM6qSQx3Cv3U3qcx3um7qefz/b3aQTqJ4ffxWx9H4bzqrfZde1/E+K1VXdQ9/xj66K32/Rnjt9VVm9eZTeijt7of6v/fecu2zephFvoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+E++Aau8CPU=
+  </data>
+ </layer>
+ <layer name="object" width="100" height="100">
+  <data encoding="base64" compression="zlib">
+   eJzt1rEKgCAUQFE/3b/OasmhtzgYQZjROfAmCcKLVkrAHXudtTPbe6/2S3XPc299uVjnWXrMJXq091bcU3qMFT3acxId9BhLj7noMZfoUL8Xue59iinnuh5j+b+aS3su2imdZwEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4lgMyVDx/
+  </data>
+ </layer>
+</map>

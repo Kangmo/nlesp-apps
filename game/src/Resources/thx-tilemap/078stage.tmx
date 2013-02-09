@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="isometric" width="20" height="16" tilewidth="104" tileheight="48">
+ <tileset firstgid="1" name="tmap_etc1" tilewidth="104" tileheight="98">
+  <image source="tmap_etc1.png" width="624" height="400"/>
+ </tileset>
+ <tileset firstgid="25" name="tmap_flower1" tilewidth="104" tileheight="98">
+  <image source="tmap_flower1.png" width="624" height="689"/>
+ </tileset>
+ <tileset firstgid="67" name="tmap_land2" tilewidth="104" tileheight="98">
+  <image source="tmap_land2.png" width="624" height="978"/>
+ </tileset>
+ <tileset firstgid="121" name="tmap_land3" tilewidth="104" tileheight="98">
+  <image source="tmap_land3.png" width="624" height="587"/>
+ </tileset>
+ <tileset firstgid="151" name="tmap_load1" tilewidth="104" tileheight="98">
+  <image source="tmap_load1.png" width="624" height="2450"/>
+ </tileset>
+ <tileset firstgid="301" name="건물1_1" tilewidth="104" tileheight="98">
+  <image source="건물1_1.png" width="624" height="588"/>
+ </tileset>
+ <tileset firstgid="337" name="건물1_2" tilewidth="104" tileheight="98">
+  <image source="건물1_2.png" width="624" height="812"/>
+ </tileset>
+ <tileset firstgid="385" name="건물2_2" tilewidth="104" tileheight="98">
+  <image source="건물2_2.png" width="624" height="392"/>
+ </tileset>
+ <tileset firstgid="409" name="건물3_3" tilewidth="104" tileheight="98">
+  <image source="건물3_3.png" width="624" height="392"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJxrY2BgaBvFo3gUj2IKcTUQt6BhfPI1BOQbgLgdDeOTbyRCPzoGAANQpy4=
+  </data>
+ </layer>
+ <layer name="Tile Layer 3" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJzVk0EKxDAIRXP0XGZSU8gdOovueqgxVOEj38y2FaSi1jyjKeV9sqsO0wb2SPzHn3qaWz1/S+qgX+26YuuqojmRScCPfKt6YmxCYgP+y2zkcoYZZ3yfwAm911irmz3vrhcuzpF9Ga/cbMt6zt6D36VBb83ycGfg3um+YL/YK2PA2TKG6T/DbJCFMUjoAWfzDfVm3kbOj6x+joSYxy+zz6Q/9jbQl+3AtdjtJ8gPO9R5Vw==
+  </data>
+ </layer>
+ <layer name="Tile Layer 2" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJylU01LxEAMTUSLuP6BWoWtqwu7IPSgF8U9eBTBq6KoeFBEFPWiKMIe9Ff4Z31hEjqN06Vg4JFpPl6SyZSoliVg7p+IJbYXwDkTjaGXgQp451DzFDqHvoR+4+D3fD9c2zZwXmeaCgZAHJtRWvKWfk/A1QeMZxBxC/qqN7nZU6XnLOLK1VeGvho8giHX/FIvi/jKRG9n3JzB4idc7+oY54PASVfAteaszdhLF7E+LXcrwXXBf/N8rZ7ajjR2W7Xd371+30A/OL5vnVPkS313LmZHvw/dfnrUbe62mBXnk7vf1Vr7iblFXmF/wZ19JPyF4+vSX6lvJhW3msh/RuwTB+5H7WEv6sXe3a1yCkelvimHGT9bZvNi/cs7sT5lRvm/2/7BITCisNPM1S/Ub74x1bufT3CNNMbbSPPNvwAszpjjF5S/Ixg=
+  </data>
+ </layer>
+</map>

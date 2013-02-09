@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="isometric" width="20" height="16" tilewidth="104" tileheight="48">
+ <tileset firstgid="1" name="tmap_etc1" tilewidth="104" tileheight="98">
+  <image source="tmap_etc1.png" width="624" height="400"/>
+ </tileset>
+ <tileset firstgid="25" name="tmap_flower1" tilewidth="104" tileheight="98">
+  <image source="tmap_flower1.png" width="624" height="689"/>
+ </tileset>
+ <tileset firstgid="67" name="tmap_land2" tilewidth="104" tileheight="98">
+  <image source="tmap_land2.png" width="624" height="978"/>
+ </tileset>
+ <tileset firstgid="121" name="tmap_land3" tilewidth="104" tileheight="98">
+  <image source="tmap_land3.png" width="624" height="587"/>
+ </tileset>
+ <tileset firstgid="151" name="tmap_load1" tilewidth="104" tileheight="98">
+  <image source="tmap_load1.png" width="624" height="2450"/>
+ </tileset>
+ <tileset firstgid="301" name="건물1_1" tilewidth="104" tileheight="98">
+  <image source="건물1_1.png" width="624" height="588"/>
+ </tileset>
+ <tileset firstgid="337" name="건물1_2" tilewidth="104" tileheight="98">
+  <image source="건물1_2.png" width="624" height="812"/>
+ </tileset>
+ <tileset firstgid="385" name="건물2_2" tilewidth="104" tileheight="98">
+  <image source="건물2_2.png" width="624" height="392"/>
+ </tileset>
+ <tileset firstgid="409" name="건물3_3" tilewidth="104" tileheight="98">
+  <image source="건물3_3.png" width="624" height="392"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJxrY2BgaBvFo3gUj+IRiAEsnKeB
+  </data>
+ </layer>
+ <layer name="Tile Layer 2" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJy1U9EOwyAIZN+2H+svW4119mUSS3Y7sWuylIQQKXdwaEXus9i8gCcnt4ksxanzeHKrxXzLLTvlUs9JpTrGaVRshf55Mg/3Zr400VChB2sqJ3y8I/WV6jaaNVPtrJdZdWbwdHj3YbgI30vHDpqiwzG7j0CzZMAGmFk5Xxf0WrRdKc/z8ZlVe6wyavf01qO2AubID/hf+7czv9HgcJ3tf6YX+VKPX467u7I/5PPMe19o9o/yjuwcSC++ZfP9rMEf9gamL81c
+  </data>
+ </layer>
+ <layer name="Tile Layer 3" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJylU01LQkEUvaPlwvf+gKnhor3ti4RWLgQNXRRFLaSiTxUXiiG4ayX1kz3DnOFdJ6TheeByv2bOux9vEhEpUMrKfjZOVyE3sG/N33PXiNXUHS8VyAVyGoeSD6eB/wTed0gK+4CxBPKF2GPwzSbkSPk/yPsjw+BsbC2vRlbWPhE3h6I4PwZ3xtVaoP8JrgeTcevcLiyM6+s/TMn7Rm25W7DPID3VexrxTZHt/YrsvvOCnmbkHwUzHsOfBLF7+peqzrz4NVld5+T7yLFnj9jZxMDv9or19M12PBbr4J6/u8/c7DuqS/a2V3xfHt9qhgPY9p9twO5g123m5tDdYNYJ+SxKe9S35JsrStZ3hdxV+rbeGuM6dkyt55WyX6s3azIYCQ==
+  </data>
+ </layer>
+</map>

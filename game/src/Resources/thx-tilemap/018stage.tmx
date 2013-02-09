@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="isometric" width="15" height="15" tilewidth="104" tileheight="48">
+ <tileset firstgid="1" name="tmap_load1" tilewidth="104" tileheight="98">
+  <image source="tmap_load1.png" width="624" height="2450"/>
+ </tileset>
+ <tileset firstgid="151" name="tmap_land3" tilewidth="104" tileheight="98">
+  <image source="tmap_land3.png" width="624" height="587"/>
+ </tileset>
+ <tileset firstgid="181" name="tmap_land2" tilewidth="104" tileheight="98">
+  <image source="tmap_land2.png" width="624" height="978"/>
+ </tileset>
+ <tileset firstgid="235" name="tmap_flower1" tilewidth="104" tileheight="98">
+  <image source="tmap_flower1.png" width="624" height="689"/>
+ </tileset>
+ <tileset firstgid="277" name="tmap_etc1" tilewidth="104" tileheight="98">
+  <image source="tmap_etc1.png" width="624" height="294"/>
+ </tileset>
+ <tileset firstgid="295" name="건물1_1" tilewidth="104" tileheight="98">
+  <image source="건물1_1.png" width="624" height="588"/>
+ </tileset>
+ <tileset firstgid="331" name="건물1_2" tilewidth="104" tileheight="98">
+  <image source="건물1_2.png" width="624" height="812"/>
+ </tileset>
+ <tileset firstgid="379" name="건물2_2" tilewidth="104" tileheight="98">
+  <image source="건물2_2.png" width="624" height="392"/>
+ </tileset>
+ <tileset firstgid="403" name="건물3_3" tilewidth="104" tileheight="98">
+  <image source="건물3_3.png" width="624" height="392"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxbwsDAsGQUj+JRPGAYAJH2kCU=
+  </data>
+ </layer>
+ <layer name="Tile Layer 3" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJy1UlsOwyAM8z0prEVwD46+ZJDJTcP+ZilSmth5UQDIYgkY3gomNF/F7JuRyG/kC3dcYkfAS0FM6o9dXe9Ln3HSPNqrrhnVTqrFOY03ivt98uR863C+Tv5np770fKey4tE+6mvtF57oi9fuc9528bcxtChISHje1XBRD7ay0WbE9/X9Iu3uLf+t7eTbvvpGvMux0RoycXYzaMz/g9Xp8IPzBhCIPyk=
+  </data>
+ </layer>
+ <layer name="Tile Layer 2" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJyNUr0KwkAMvnQV3LyWIraTKPgz+AhCFwfxBcRJJ2dBHPq+dXHsZmJz9PO4Vj8I+bl8ueRylenHmb59C/5e7ZT1hCVR7cPFHPcBOTnbI/UzqOeQwVkSqG0DMcGS4wsyZegsCnAOHblSv6C2Vx93jg2AK7NuNI95ZeHVlRkuGpOZhmxnHTOEEMNb3qipYal9J+lxynKEmqnm5JD/zx3I7cOLZaY5/v4dF++N9J9Ylbm+B+5denW+6KvaW9ZrznfclcbHwK21J9fPr/6fYFfGlDv6aIN7kT8aw97EP1H4TyDqpmZvD29TRxsf
+  </data>
+ </layer>
+</map>

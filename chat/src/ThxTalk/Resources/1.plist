@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>UserID</key>
+		<string>1</string>
+		<key>Message</key>
+		<string>hello world</string>
+		<key>Date</key>
+		<date>2012-10-03T06:39:58Z</date>
+	</dict>
+	<dict>
+		<key>UserID</key>
+		<string>0</string>
+		<key>Message</key>
+		<string>떼굴떼굴 굴러라 코코몽이 부른다</string>
+		<key>Date</key>
+		<date>2012-10-04T07:39:58Z</date>
+	</dict>
+	<dict>
+		<key>UserID</key>
+		<string>0</string>
+		<key>Message</key>
+		<string>냐옹</string>
+		<key>Date</key>
+		<date>2012-10-04T08:39:58Z</date>
+	</dict>
+</array>
+</plist>

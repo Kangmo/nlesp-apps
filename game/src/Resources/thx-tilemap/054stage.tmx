@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="isometric" width="20" height="16" tilewidth="104" tileheight="48">
+ <tileset firstgid="1" name="tmap_etc1" tilewidth="104" tileheight="98">
+  <image source="tmap_etc1.png" width="624" height="400"/>
+ </tileset>
+ <tileset firstgid="25" name="tmap_flower1" tilewidth="104" tileheight="98">
+  <image source="tmap_flower1.png" width="624" height="689"/>
+ </tileset>
+ <tileset firstgid="67" name="tmap_land2" tilewidth="104" tileheight="98">
+  <image source="tmap_land2.png" width="624" height="978"/>
+ </tileset>
+ <tileset firstgid="121" name="tmap_land3" tilewidth="104" tileheight="98">
+  <image source="tmap_land3.png" width="624" height="587"/>
+ </tileset>
+ <tileset firstgid="151" name="tmap_load1" tilewidth="104" tileheight="98">
+  <image source="tmap_load1.png" width="624" height="2450"/>
+ </tileset>
+ <tileset firstgid="301" name="건물1_1" tilewidth="104" tileheight="98">
+  <image source="건물1_1.png" width="624" height="588"/>
+ </tileset>
+ <tileset firstgid="337" name="건물1_2" tilewidth="104" tileheight="98">
+  <image source="건물1_2.png" width="624" height="812"/>
+ </tileset>
+ <tileset firstgid="385" name="건물2_2" tilewidth="104" tileheight="98">
+  <image source="건물2_2.png" width="624" height="392"/>
+ </tileset>
+ <tileset firstgid="409" name="건물3_3" tilewidth="104" tileheight="98">
+  <image source="건물3_3.png" width="624" height="392"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJxrY2BgaBvFo3gUj+IRiAEsnKeB
+  </data>
+ </layer>
+ <layer name="Tile Layer 3" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJyVVNEOAyEI49P9ZZ3Bu+1lOttbQ9zmTIg5rKUg3N3munU7YBXf1daL2GaWuA+r059M9oEtE2PefRpn3Mnd6D/h9+m3DB49E8xljH9Cs96lFsavwBXkQoyuAziN4UGDz9xfd5vkVCLZ1JRWtayS/yF8K027nDwrwvMNu8tJXXw/39D4i/PfnFec2k+Od9Y+2clbOVVHhr+hnuzlOBvUEGOh567+jD1XMT+n4DL6U3PI8Ot91amzpm8Ta8vacG7rB75YQw/fMQ/dOas6B6t/Anm1Zqy1v89T1KZ1I64szlbzqDM9zh7dnquX5EI=
+  </data>
+ </layer>
+ <layer name="Tile Layer 2" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJyFVE1LxEAMTdxfUV1Wl3XwposoWFfEizdhFREPCntexe+z0J9uQhOaZpMaCGknL+9lZtICAGxDblvO37FdnyI06hbfUH6HYqH4iN16QdgwrS+GM8LPgtohXmvXGGOY81nWPyl+yfPK7ec/ezF47XMM3Xmx1RKPKH9IeI0RX5E4In+Ts5zD5j3UrTd2jbG12+uTvQNo79pzDXGqj4NeM56Ms3I5tSuZgzXG2hkn73WPatj5nblmwdz485uSH1NNFXAq/nxgrpT3VfrdN1irdQbdjGv+QbBVTt/T8FbM8w22emyn2P9+diVOlC/R+TY1S+K4T3R9P6qrc/ET1H1gt88TyS8C3AX1cJvoXjq9u+S/wDo8/wfY/zexzyXHd7wg/zV7/gP21yjS
+  </data>
+ </layer>
+</map>

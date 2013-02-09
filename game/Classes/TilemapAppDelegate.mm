@@ -16,12 +16,33 @@
 @implementation TilemapAppDelegate
 
 @synthesize window;
+@synthesize userID;
 
 - (void) applicationDidFinishLaunching:(UIApplication*)application
 {
-	// Init the window
+    // Init the window
 	window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	
+    [self showMainWindow];
+    
+    /*
+    NSString *_userID = [[NSUserDefaults standardUserDefaults] stringForKey:@"UserID"];
+    if (_userID)
+    {
+        self.userID = _userID;
+        [self showMainWindow];
+    }
+    else
+    {
+        CreateUserViewController *vc = [[CreateUserViewController alloc] initWithNibName:@"CreateUserViewController" bundle:nil];
+        window.rootViewController = vc;
+        [window makeKeyAndVisible];
+    }
+     */
+}
+
+- (void)showMainWindow
+{
 	// Try to use CADisplayLink director
 	// if it fails (SDK < 3.1) use the default director
 	if ([CCDirector setDirectorType:kCCDirectorTypeDisplayLink] == NO)
@@ -44,7 +65,9 @@
 								   pixelFormat:kEAGLColorFormatRGB565	// kEAGLColorFormatRGBA8
 								   depthFormat:GL_DEPTH_COMPONENT24_OES
 							preserveBackbuffer:NO];
-	
+    // enable multi touch
+	[glView setMultipleTouchEnabled:YES];
+    
 	// attach the openglView to the director
 	[director setOpenGLView:glView];
 	

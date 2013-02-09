@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="isometric" width="20" height="16" tilewidth="104" tileheight="48">
+ <tileset firstgid="1" name="tmap_etc1" tilewidth="104" tileheight="98">
+  <image source="tmap_etc1.png" width="624" height="400"/>
+ </tileset>
+ <tileset firstgid="25" name="tmap_flower1" tilewidth="104" tileheight="98">
+  <image source="tmap_flower1.png" width="624" height="689"/>
+ </tileset>
+ <tileset firstgid="67" name="tmap_land2" tilewidth="104" tileheight="98">
+  <image source="tmap_land2.png" width="624" height="978"/>
+ </tileset>
+ <tileset firstgid="121" name="tmap_land3" tilewidth="104" tileheight="98">
+  <image source="tmap_land3.png" width="624" height="587"/>
+ </tileset>
+ <tileset firstgid="151" name="tmap_load1" tilewidth="104" tileheight="98">
+  <image source="tmap_load1.png" width="624" height="2450"/>
+ </tileset>
+ <tileset firstgid="301" name="건물1_1" tilewidth="104" tileheight="98">
+  <image source="건물1_1.png" width="624" height="588"/>
+ </tileset>
+ <tileset firstgid="337" name="건물1_2" tilewidth="104" tileheight="98">
+  <image source="건물1_2.png" width="624" height="812"/>
+ </tileset>
+ <tileset firstgid="385" name="건물2_2" tilewidth="104" tileheight="98">
+  <image source="건물2_2.png" width="624" height="392"/>
+ </tileset>
+ <tileset firstgid="409" name="건물3_3" tilewidth="104" tileheight="98">
+  <image source="건물3_3.png" width="624" height="392"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJxrY2BgaKMy7qUyPeq+UfeNum/UfbRwHwBNZ6mx
+  </data>
+ </layer>
+ <layer name="Tile Layer 2" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJy9kg0KwCAIhT26t1gtNtgN8oZzTAmk9odOkIeGry9pBYCNc3ZSTgRHZV88fLP4k9RJ6iqajJKozhVnLstnOTI849K5Ed/kxPeWy57/vb87LltH89n/plydPvbeEc1HTS/3VAf9aL7S7vmkC5yhvl6xA7yut28=
+  </data>
+ </layer>
+ <layer name="Tile Layer 3" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJyNU7kKQjEQTJ7wCv0DL7D3vhDBxk4QFFSwELVQwcILEUQQ3qebwCwsSxLfQJgks1c2yVErFSml1mCLCKOulRNWW2qV8L2vWGeEzxw6z8HRFP7/MIF9jFgbT60ccUBriPxjEc9XN8X9GH+X5vKx6xX6fTLcRe4ms+mL/PIuZMwedNl3qu+OfA/wi8Wz62uK/uXZXObxnZ3Q0ensCO9APUMWa2fmU/SvyOJL/7R3I3E2sQ+OWqzfDPsjVs8lUHchkN9XxyDlOUhb4H5v7D+3Av94z959LLQQfDr9y7Z4X89AX6y+deg5aBqcNSOBXQU2VXAZXAIXwfRm6W/VwPR+f01YFpM=
+  </data>
+ </layer>
+</map>

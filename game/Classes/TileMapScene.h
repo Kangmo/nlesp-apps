@@ -42,6 +42,23 @@ typedef enum
 	
 	int bogusScore;
 	CGPoint previousTilePos;
+    
+    // ** added by Minkyoung Jang
+    Player* opponent;
+
+    uint32_t inactiveMineId;
+    uint32_t activeMineId;
+    uint32_t shoesId;
+    uint32_t goalId;
+
+    int speedUp;
+    CCLabelAtlas *mineNumLabel;
+    
+    CGPoint targetPosition;
+    CGPoint moveTilemapPositionOffsets[MAX_MoveDirections];
+    
+    UITouch* currentTouch;
+    // ** end
 }
 
 +(id) scene;

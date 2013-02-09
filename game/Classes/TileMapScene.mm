@@ -10,10 +10,21 @@
 #import "Player.h"
 
 #import "NetworkPackets.h"
+#import "SimpleAudioEngine.h"
+
 
 @interface TileMapLayer (PrivateMethods)
 -(CGPoint) tilePosFromLocation:(CGPoint)location tileMap:(CCTMXTiledMap*)tileMap;
 -(void) centerTileMapOnTileCoord:(CGPoint)tilePos tileMap:(CCTMXTiledMap*)tileMap;
+
+- (bool)hasGoalAt:(CGPoint)tilePos tileMap:(CCTMXTiledMap *)tileMap;
+- (bool)hasInactiveMineAt:(CGPoint)tilePos tileMap:(CCTMXTiledMap *)tileMap;
+- (bool)hasActiveMineAt:(CGPoint)tilePos tileMap:(CCTMXTiledMap *)tileMap;
+- (bool)hasShoesAt:(CGPoint)tilePos tileMap:(CCTMXTiledMap *)tileMap; 
+- (void)setItemIds;
+
+- (void)removeItemAt:(CGPoint)tilePos;
+
 @end
 
 
@@ -32,18 +43,22 @@
 	if ((self = [super init]))
 	{
 		GameKitHelper& gkHelper = GameKitHelper::sharedGameKitHelper();
-		gkHelper.delegate(self);
-		gkHelper.authenticateLocalPlayer();
+
+        gkHelper.delegate(self);
+        
+        gkHelper.authenticateLocalPlayer();
 		
 		CCTMXTiledMap* tileMap = [CCTMXTiledMap tiledMapWithTMXFile:@"isometric-with-border.tmx"];
+		//CCTMXTiledMap* tileMap = [CCTMXTiledMap tiledMapWithTMXFile:@"map.tmx"];
 		[self addChild:tileMap z:-1 tag:TileMapNode];
 		
 		CCTMXLayer* layer = [tileMap layerNamed:@"Collisions"];
 		layer.visible = NO;
-		
+        		
 		// Use a negative offset to set the tilemap's start position
 		tileMap.position = CGPointMake(-500, -500);
-		
+        targetPosition = CGPointMake(-500, -500);
+        
 		self.isTouchEnabled = YES;
 
 		// define the extents of the playable area in tile coordinates
@@ -58,8 +73,34 @@
 		player.position = CGPointMake(screenSize.width / 2, screenSize.height / 2);
 		// approximately position player's texture to best match the tile center position
 		player.anchorPoint = CGPointMake(0.3f, 0.1f);
+        player.relativePosition = CGPointMake(0, 0);
 		[self addChild:player];
+        
+        // create and add the opponent
+        opponent = [Player opponent];
+        opponent.position = CGPointMake(screenSize.width / 2, screenSize.height / 2);
+        opponent.anchorPoint = CGPointMake(0.3f, 0.1f);
+        opponent.relativePosition = CGPointMake(0, 0);
+        opponent.targetPosition = CGPointMake(0, 0);
+        [self addChild:opponent];
+        
+        // create and add the mine button
+        CCMenuItemImage *mineButton = [CCMenuItemImage itemFromNormalImage:@"bomb64.png" selectedImage:@"bomb64.png" target:self selector:@selector(mineButtonPressed:)];
+        CCMenu* menu = [CCMenu menuWithItems:mineButton, nil];
+        menu.position = CGPointMake(screenSize.width - 30, 30);
+        [self addChild:menu];
+        
+        // create and add the mine number label
+        mineNumLabel = [[CCLabelAtlas labelWithString:@"0" charMapFile:@"fps_images.png" itemWidth:16 itemHeight:24 startCharMap:'.'] retain];
+        mineNumLabel.position = CGPointMake(20,10);
+        [mineButton addChild:mineNumLabel];
 
+        // init item IDs
+        [self setItemIds];
+        
+        // how much faster when shoes on
+        speedUp = 2;
+        
 		// divide the screen into 4 areas
 		screenCenter = CGPointMake(screenSize.width / 2, screenSize.height / 2);
 		upperLeft = CGRectMake(0, screenCenter.y, screenCenter.x, screenCenter.y);
@@ -75,6 +116,13 @@
 		moveOffsets[MoveDirectionLowerRight] = CGPointMake(1, 0);
 
 		currentMoveDirection = MoveDirectionNone;
+        
+		moveTilemapPositionOffsets[MoveDirectionNone] = CGPointZero;
+		moveTilemapPositionOffsets[MoveDirectionUpperLeft] = CGPointMake(26, -13);
+		moveTilemapPositionOffsets[MoveDirectionLowerLeft] = CGPointMake(26, 13);
+		moveTilemapPositionOffsets[MoveDirectionUpperRight] = CGPointMake(-26, -13);
+		moveTilemapPositionOffsets[MoveDirectionLowerRight] = CGPointMake(-26, 13);
+        
 		
 		// continuously check for walking
 		[self scheduleUpdate];
@@ -91,10 +139,10 @@
 #pragma mark GameKitHelper delegate methods
 -(void) onLocalPlayerAuthenticationChanged
 {
-	VKLocalPlayer & localPlayer = VKLocalPlayer::localPlayer();
-	CCLOG(@"LocalPlayer isAuthenticated changed to: %@", localPlayer.authenticated() ? @"YES" : @"NO");
+	VKLocalPlayer * localPlayer = VKLocalPlayer::localPlayer();
+	CCLOG(@"LocalPlayer isAuthenticated changed to: %@", localPlayer->authenticated() ? @"YES" : @"NO");
 	
-	if (localPlayer.authenticated())
+	if (localPlayer->authenticated())
 	{
         GameKitHelper& gkHelper = GameKitHelper::sharedGameKitHelper();
 		gkHelper.getLocalPlayerFriends();
@@ -104,15 +152,19 @@
 
 -(void) onFriendListReceived:(const TxStringArray &)friends
 {
+    // comment by MKJANG
+    // to remove build error
+    /*
 	CCLOG(@"onFriendListReceived: %s", friends.toString().c_str());
 
     GameKitHelper& gkHelper = GameKitHelper::sharedGameKitHelper();
 	gkHelper.getPlayerInfo(friends);
+     */
 }
 
 -(void) onPlayerInfoReceived:(const TxStringArray &)players
 {
-	CCLOG(@"onPlayerInfoReceived: %s", players.toString().c_str());
+//	CCLOG(@"onPlayerInfoReceived: %s", players.toString().c_str());
     
     GameKitHelper& gkHelper = GameKitHelper::sharedGameKitHelper();
 
@@ -137,7 +189,9 @@
     // BUGBUG : Not tested yet.
     gkHelper.findMatch(request);
 
-    gkHelper.queryMatchmakingActivity();
+    // comment by MKJANG
+    // to remove build error
+//    gkHelper.queryMatchmakingActivity();
 }
 
 /* 
@@ -220,34 +274,101 @@
 -(void) onReceivedData:(const TxData &)data fromPlayer:(const TxString &)playerID
 {
 	SBasePacket* basePacket = (SBasePacket*) data.bytes();
-	CCLOG(@"onReceivedData: %s fromPlayer: %s - Packet type: %i", data.toString().c_str(), playerID.c_str(), basePacket->type);
+//	CCLOG(@"onReceivedData: %s fromPlayer: %s - Packet type: %i", data.toString().c_str(), playerID.c_str(), basePacket->type);
 	
-	switch (basePacket->type)
-	{
-		case kPacketTypeScore:
-		{
-			SScorePacket* scorePacket = (SScorePacket*)basePacket;
-			CCLOG(@"\tscore = %i", scorePacket->score);
-			break;
-		}
-		case kPacketTypePosition:
-		{
-			SPositionPacket* positionPacket = (SPositionPacket*)basePacket;
-			CCLOG(@"\tposition = (%.1f, %.1f)", positionPacket->position.x, positionPacket->position.y);
-			
-			// instruct remote players to move their tilemap layer to this position (giving the impression that the player has moved)
-			// this is just to show that it's working by "magically" moving the other device's screen/player
-			if (playerID != VKLocalPlayer::localPlayer().playerID())
-			{
-				CCTMXTiledMap* tileMap = (CCTMXTiledMap*)[self getChildByTag:TileMapNode];
-				[self centerTileMapOnTileCoord:positionPacket->position tileMap:tileMap];
-			}
-			break;
-		}
-		default:
-			CCLOG(@"unknown packet type %i", basePacket->type);
-			break;
-	}
+    if (playerID != VKLocalPlayer::localPlayer()->playerID())
+    {
+        switch (basePacket->type)
+        {
+            case kPacketTypeScore:
+            {
+                SScorePacket* scorePacket = (SScorePacket*)basePacket;
+                CCLOG(@"\tscore = %i", scorePacket->score);
+                break;
+            }
+
+            case kPacketTypePosition:
+            {
+                SPositionPacket* positionPacket = (SPositionPacket*)basePacket;
+                CCLOG(@"\tposition = (%.1f, %.1f)", positionPacket->position.x, positionPacket->position.y);
+                
+                opponent.targetPosition = ccpMult(positionPacket->position, -1.0);
+                break;
+            }
+
+            case kPacketTypeItem:
+            {
+                SItemPacket *itemPacket = (SItemPacket *)basePacket;
+                switch (itemPacket->itemType) {
+                    case kItemTypeMine:
+                    {
+                        switch (itemPacket->actionType)
+                        {
+                            case kActionTypeMineGet:
+                            case kActionTypeMineStepOn:
+                            {
+                                [self removeItemAt:itemPacket->position];
+                                break;
+                            }
+                            case kActionTypeMinePut:
+                            {
+                                [self putMineAt:itemPacket->position];
+                                break;
+                            }
+                            default:
+                            {
+                                NSAssert1(NO, @"unknown mine action type: %d", itemPacket->actionType);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                        
+                    case kItemTypeShoes:
+                    {
+                        switch (itemPacket->actionType) {
+                            case kActionTypeShoesGet:
+                            {
+                                [self removeItemAt:itemPacket->position];
+                                break;
+                            }
+                            case kActionTypeShoesOn:
+                            {
+                                break;
+                            }
+                            case kActionTypeShoesOff:
+                            {
+                                break;
+                            }
+                            default:
+                            {
+                                NSAssert1(NO, @"unknown shoes action type: %d", itemPacket->actionType);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                        
+                    default:
+                    {
+                        NSAssert1(NO, @"unknown item type: %d", itemPacket->itemType);
+                        break;
+                    }
+                }
+                break;
+            }
+                
+            case kPacketTypeEvent:
+            {
+                
+                break;
+            }
+                
+            default:
+                CCLOG(@"unknown packet type %i", basePacket->type);
+                break;
+        }
+    }
 }
 
 // TM16: send a bogus score (simply an integer increased every time it is sent)
@@ -268,7 +389,7 @@
 // TM16: send a tile coordinate
 -(void) sendPosition:(CGPoint)tilePos
 {
-	if (GameKitHelper::sharedGameKitHelper().currentMatch() != NULL)
+    if (GameKitHelper::sharedGameKitHelper().currentMatch() != NULL)
 	{
 		SPositionPacket packet;
 		packet.type = kPacketTypePosition;
@@ -276,6 +397,32 @@
 		
 		GameKitHelper::sharedGameKitHelper().sendDataToAllPlayers(&packet, sizeof(packet));
 	}
+}
+
+- (void)sendItemPacket:(EItemTypes)itemType withAction:(EActionTypes)actionType withPosition:(CGPoint)position
+{
+    if (GameKitHelper::sharedGameKitHelper().currentMatch() != NULL)
+    {
+        SItemPacket packet;
+        packet.type = kPacketTypeItem;
+        packet.itemType = itemType;
+        packet.actionType = actionType;
+        packet.position = position;
+        
+        GameKitHelper::sharedGameKitHelper().sendDataToAllPlayers(&packet, sizeof(packet));
+    }
+}
+
+- (void)sendEventPacket:(EEventTypes)eventType
+{
+    if (GameKitHelper::sharedGameKitHelper().currentMatch() != NULL)
+    {
+        SEventPacket packet;
+        packet.type = kPacketTypeEvent;
+        packet.eventType = eventType;
+        
+        GameKitHelper::sharedGameKitHelper().sendDataToAllPlayers(&packet, sizeof(packet));
+    }
 }
 
 #pragma mark methods from previous chapters
@@ -306,6 +453,114 @@
 	}
 
 	return isBlocked;
+}
+
+- (bool)hasGoalAt:(CGPoint)tilePos tileMap:(CCTMXTiledMap *)tileMap
+{
+    CCTMXLayer *layer = [tileMap layerNamed:@"Objects"];
+    NSAssert(layer != nil, @"Objects layer not found!");
+    
+    bool hasItem = NO;
+    unsigned int tileGID = [layer tileGIDAt:tilePos];
+    
+    if (tileGID == goalId)
+    {
+        hasItem = YES;
+    }
+    
+    /*
+     if (tileGID > 0)
+     {
+     NSDictionary *tileProperties = [tileMap propertiesForGID:tileGID];
+     id property = [tileProperties objectForKey:@"goal"];
+     hasItem = (property != nil);
+     }
+     */
+    return hasItem;
+ 
+}
+
+- (bool)hasInactiveMineAt:(CGPoint)tilePos tileMap:(CCTMXTiledMap*)tileMap
+{
+    CCTMXLayer *layer = [tileMap layerNamed:@"Objects"];
+    NSAssert(layer != nil, @"Objects layer not found!");
+                           
+    bool hasItem = NO;
+    unsigned int tileGID = [layer tileGIDAt:tilePos];
+
+    if (tileGID == inactiveMineId)
+    {
+        hasItem = YES;
+    }
+
+/*
+    if (tileGID > 0)
+    {
+        NSDictionary *tileProperties = [tileMap propertiesForGID:tileGID];
+        id property = [tileProperties objectForKey:@"inactiveMine"];
+        hasItem = (property != nil);
+    }
+*/
+    return hasItem;
+}
+
+- (bool)hasActiveMineAt:(CGPoint)tilePos tileMap:(CCTMXTiledMap*)tileMap
+{
+    CCTMXLayer *layer = [tileMap layerNamed:@"Objects"];
+    NSAssert(layer != nil, @"Objects layer not found!");
+    
+    bool hasItem = NO;
+    unsigned int tileGID = [layer tileGIDAt:tilePos];
+    
+    if (tileGID == activeMineId)
+    {
+        hasItem = YES;
+    }
+    
+    /*
+     if (tileGID > 0)
+     {
+     NSDictionary *tileProperties = [tileMap propertiesForGID:tileGID];
+     id property = [tileProperties objectForKey:@"activeMine"];
+     hasItem = (property != nil);
+     }
+     */
+    return hasItem;
+}
+
+- (bool)hasShoesAt:(CGPoint)tilePos tileMap:(CCTMXTiledMap*)tileMap
+{
+    CCTMXLayer *layer = [tileMap layerNamed:@"Objects"];
+    NSAssert(layer != nil, @"Objects layer not found!");
+    
+    bool hasItem = NO;
+    unsigned int tileGID = [layer tileGIDAt:tilePos];
+    
+    if (tileGID == shoesId)
+    {
+        hasItem = YES;
+    }
+    
+    /*
+     if (tileGID > 0)
+     {
+     NSDictionary *tileProperties = [tileMap propertiesForGID:tileGID];
+     id property = [tileProperties objectForKey:@"shoes"];
+     hasItem = (property != nil);
+     }
+     */
+    return hasItem;
+}
+
+- (void)removeItemAt:(CGPoint)tilePos
+{
+    CCNode* node = [self getChildByTag:TileMapNode];
+    NSAssert([node isKindOfClass:[CCTMXTiledMap class]], @"not a CCTMXTiledMap");
+    CCTMXTiledMap* tileMap = (CCTMXTiledMap*)node;
+ 
+    CCTMXLayer *layer = [tileMap layerNamed:@"Objects"];
+    NSAssert(layer != nil, @"Objects layer not found!");
+    [layer removeTileAt:tilePos];
 }
 
 -(CGPoint) ensureTilePosIsWithinBounds:(CGPoint)tilePos
@@ -378,7 +633,6 @@
 {
 	// get the position in tile coordinates from the touch location
 	CGPoint touchLocation = [self locationFromTouches:touches];
-
 	// check on which screen quadrant the touch was and set the move direction accordingly
 	if (CGRectContainsPoint(upperLeft, touchLocation))
 	{
@@ -396,52 +650,247 @@
 	{
 		currentMoveDirection = MoveDirectionLowerRight;
 	}
+    
+    currentTouch = [[touches anyObject] retain];
 }
 
 -(void) ccTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-	currentMoveDirection = MoveDirectionNone;
+    if (currentTouch == [touches anyObject])
+    {
+        currentMoveDirection = MoveDirectionNone;
+        [currentTouch release];
+        currentTouch = nil;
+    }
+}
+
+- (void)putMineAt:(CGPoint)tilePos
+{
+    CCNode* node = [self getChildByTag:TileMapNode];
+    NSAssert([node isKindOfClass:[CCTMXTiledMap class]], @"not a CCTMXTiledMap");
+    CCTMXTiledMap* tileMap = (CCTMXTiledMap*)node;
+    CCTMXLayer *layer = [tileMap layerNamed:@"Objects"];
+    NSAssert(layer != nil, @"Objects layer not found!");
+
+    [layer setTileGID:activeMineId at:tilePos];
+}
+
+-(void) mineButtonPressed:(id)sender
+{
+    if (player.mineNum > 0)
+    {
+        CCNode* node = [self getChildByTag:TileMapNode];
+        NSAssert([node isKindOfClass:[CCTMXTiledMap class]], @"not a CCTMXTiledMap");
+        CCTMXTiledMap* tileMap = (CCTMXTiledMap*)node;
+ 
+        CGPoint tilePos = [self tilePosFromLocation:screenCenter tileMap:tileMap];
+        if (![self hasInactiveMineAt:tilePos tileMap:tileMap] &&
+            ![self hasActiveMineAt:tilePos tileMap:tileMap] &&
+            ![self hasShoesAt:tilePos tileMap:tileMap])
+        {
+            [self putMineAt:tilePos];
+            player.mineNum--;
+            [mineNumLabel setString:[NSString stringWithFormat:@"%d", player.mineNum]];
+            
+            // send item packet
+            [self sendItemPacket:kItemTypeMine withAction:kActionTypeMinePut withPosition:tilePos];
+        }
+    }
 }
 
 -(void) update:(ccTime)delta
 {
-	CCNode* node = [self getChildByTag:TileMapNode];
-	NSAssert([node isKindOfClass:[CCTMXTiledMap class]], @"not a CCTMXTiledMap");
-	CCTMXTiledMap* tileMap = (CCTMXTiledMap*)node;
+    static int sendPositionCount = 0;
+    
+    if (player.freezeTime > 0)
+    {
+        player.freezeTime -= delta;
+        if (player.freezeTime < 0)
+        {
+            player.freezeTime = 0;
+        }
+    }
+    else 
+    { 
+        CCNode* node = [self getChildByTag:TileMapNode];
+        NSAssert([node isKindOfClass:[CCTMXTiledMap class]], @"not a CCTMXTiledMap");
+        CCTMXTiledMap* tileMap = (CCTMXTiledMap*)node;
+        
+        // if the tilemap is currently being moved, wait until it's done moving
+        if (ccpDistance(tileMap.position, targetPosition) <= 0)
+        {
+            if (currentMoveDirection != MoveDirectionNone)
+            {
+                // player is always standing on the tile which is centered on the screen
+                CGPoint currentTilePos = [self tilePosFromLocation:screenCenter tileMap:tileMap];
+                
+                // get the tile coordinate offset for the direction we're moving to
+                NSAssert(currentMoveDirection < MAX_MoveDirections, @"invalid move direction!");
+                CGPoint offset = moveOffsets[currentMoveDirection];
+                
+                // offset the tile position and then make sure it's within bounds of the playable area
+                CGPoint tilePos = CGPointMake(currentTilePos.x + offset.x, currentTilePos.y + offset.y);
+                tilePos = [self ensureTilePosIsWithinBounds:tilePos];
+                
+                // if player can move
+                if ((ccpDistance(currentTilePos, tilePos) > 0) &&
+                    ([self isTilePosBlocked:tilePos tileMap:tileMap] == NO))
+                {
+                    if ([self hasGoalAt:tilePos tileMap:tileMap])
+                    {
+                        CCSprite *clear = [[[CCSprite alloc] initWithFile:@"clear.png"] autorelease];
+                        
+                        CGSize screenSize = [[CCDirector sharedDirector] winSize];
+                        clear.position = CGPointMake(screenSize.width / 2, screenSize.height / 2);
+                        //[self addChild:clear];
+                        
+                        // send event packet
+                        [self sendEventPacket:kEventTypeAtGoal];
+                    }
+                    else if ([self hasInactiveMineAt:tilePos tileMap:tileMap])
+                    {
+                        // remove inactive mine
+                        [self removeItemAt:tilePos];
+                        
+                        // decrease mine num
+                        player.mineNum++;
+                        [mineNumLabel setString:[NSString stringWithFormat:@"%d", player.mineNum]];
+                        
+                        // send item packet
+                        [self sendItemPacket:kItemTypeMine withAction:kActionTypeMineGet withPosition:tilePos];
+                    }
+                    else if ([self hasActiveMineAt:tilePos tileMap:tileMap])
+                    {
+                        // remove active mine
+                        [self removeItemAt:tilePos];
+                        
+                        // play sound
+                        [[SimpleAudioEngine sharedEngine] playEffect:@"808_120bpm.wav"];
+                        
+                        // freeze player for 3 seconds
+                        CCBlink *blinkAction = [CCBlink actionWithDuration:3.0 blinks:10];
+                        [player runAction:blinkAction];
+                        player.freezeTime = 3.0;
+                        
+                        // send item packet
+                        [self sendItemPacket:kItemTypeMine withAction:kActionTypeMineStepOn withPosition:tilePos];
+                    }
+                    else if ([self hasShoesAt:tilePos tileMap:tileMap])
+                    {
+                        player.shoesOn = YES;
+                        
+                        // remove shoes
+                        [self removeItemAt:tilePos];
+                        
+                        // send item packet
+                        [self sendItemPacket:kItemTypeShoes withAction:kActionTypeShoesGet withPosition:tilePos];
+                    }
+                
+                    // set target position
+                    targetPosition = ccpAdd(tileMap.position, moveTilemapPositionOffsets[currentMoveDirection]);
+                    
+                    // TM16: update remote devices with the new position
+                    //[self sendPosition:tilePos];
+                    
+                    sendPositionCount = 0;
+                }
+            }
+        }
+        // move tilemap
+        else
+        {
+            CGFloat offsetX = 2;
+            CGFloat offsetY = 1;
+            if (player.shoesOn)
+            {
+                offsetX = offsetX * speedUp;
+                offsetY = offsetY * speedUp;
+            }
 
-	// if the tilemap is currently being moved, wait until it's done moving
-	if ([tileMap numberOfRunningActions] == 0)
-	{
-		if (currentMoveDirection != MoveDirectionNone)
-		{
-			// player is always standing on the tile which is centered on the screen
-			CGPoint tilePos = [self tilePosFromLocation:screenCenter tileMap:tileMap];
-			
-			// get the tile coordinate offset for the direction we're moving to
-			NSAssert(currentMoveDirection < MAX_MoveDirections, @"invalid move direction!");
-			CGPoint offset = moveOffsets[currentMoveDirection];
-			
-			// offset the tile position and then make sure it's within bounds of the playable area
-			tilePos = CGPointMake(tilePos.x + offset.x, tilePos.y + offset.y);
-			tilePos = [self ensureTilePosIsWithinBounds:tilePos];
-			
-			if ([self isTilePosBlocked:tilePos tileMap:tileMap] == NO)
-			{
-				// move tilemap so that touched tiles is at center of screen
-				[self centerTileMapOnTileCoord:tilePos tileMap:tileMap];
-				
-				// TM16: update remote devices with the new position
-				[self sendPosition:tilePos];
-			}
-		}
-	}
+            CGFloat newX, newY;
+            if (targetPosition.x > tileMap.position.x)
+            {
+                newX = MIN(targetPosition.x, tileMap.position.x + offsetX);
+            }
+            else
+            {
+                newX = MAX(targetPosition.x, tileMap.position.x - offsetX);
+            }
+            offsetX = newX - tileMap.position.x;
+            
+            if (targetPosition.y > tileMap.position.y)
+            {
+                newY = MIN(targetPosition.y, tileMap.position.y + offsetY);
+            }
+            else
+            {
+                newY = MAX(targetPosition.y, tileMap.position.y - offsetY);
+            }
+            offsetY = newY - tileMap.position.y;
+            
+            // move tilemap
+            tileMap.position = CGPointMake(newX, newY);
+            
+            if (offsetX != 0 || offsetY != 0)
+            {
+                CGPoint offset = CGPointMake(offsetX, offsetY);
+                // change player's relative position
+                player.relativePosition = ccpSub(player.relativePosition, offset);
+               
+                // send position
+                if (sendPositionCount == 0 ||
+                    ccpDistance(tileMap.position, targetPosition) == 0)
+                {
+                    [self sendPosition:player.relativePosition];
+                }
+                sendPositionCount = (sendPositionCount + 1) % 15;
+            }
+        }
+        
+        // change opponent's relative position toward target position
+        if (ccpDistance(opponent.relativePosition, opponent.targetPosition) > 0)
+        {
+            CGFloat offsetX = 2;
+            CGFloat offsetY = 1;
+            if (opponent.targetPosition.x < opponent.relativePosition.x)
+            {
+                offsetX = -offsetX;
+            }
+            if (opponent.targetPosition.y < opponent.relativePosition.y)
+            {
+                offsetY = -offsetY;
+            }
+            opponent.relativePosition = ccpAdd
+            (opponent.relativePosition, CGPointMake(offsetX, offsetY));
+        }
+        // move opponent
+        CGPoint temp = ccpSub(player.position, opponent.relativePosition);
+        opponent.position = ccpSub(temp, player.relativePosition);
+        
+        // continuously fix the player's Z position
+        CGPoint tilePos = [self floatingTilePosFromLocation:screenCenter tileMap:tileMap];
+        [player updateVertexZ:tilePos tileMap:tileMap];
+        
+        // TM16: send a score update to remote devices every frame
+        //[self sendScore];
+    }
+}
 
-	// continuously fix the player's Z position
-	CGPoint tilePos = [self floatingTilePosFromLocation:screenCenter tileMap:tileMap];
-	[player updateVertexZ:tilePos tileMap:tileMap];
-
-	// TM16: send a score update to remote devices every frame
-	[self sendScore];
+- (void)setItemIds
+{
+    /*
+    CCNode* node = [self getChildByTag:TileMapNode];
+    NSAssert([node isKindOfClass:[CCTMXTiledMap class]], @"not a CCTMXTiledMap");
+    CCTMXTiledMap* tileMap = (CCTMXTiledMap*)node;
+    CCTMXLayer *layer = [tileMap layerNamed:@"Objects"];
+    uint32_t treeId = [layer tileGIDAt:CGPointMake(13, 33)];
+    NSLog(@"treeid: %d", treeId); // 54
+    */
+    
+    inactiveMineId = 54;
+    activeMineId = 39;
+    shoesId = 49;
+    goalId = 55;
 }
 
 @end

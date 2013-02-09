@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="isometric" width="15" height="15" tilewidth="104" tileheight="48">
+ <tileset firstgid="1" name="tmap_load1" tilewidth="104" tileheight="98">
+  <image source="tmap_load1.png" width="624" height="2450"/>
+ </tileset>
+ <tileset firstgid="151" name="tmap_land3" tilewidth="104" tileheight="98">
+  <image source="tmap_land3.png" width="624" height="587"/>
+ </tileset>
+ <tileset firstgid="181" name="tmap_land2" tilewidth="104" tileheight="98">
+  <image source="tmap_land2.png" width="624" height="978"/>
+ </tileset>
+ <tileset firstgid="235" name="tmap_flower1" tilewidth="104" tileheight="98">
+  <image source="tmap_flower1.png" width="624" height="689"/>
+ </tileset>
+ <tileset firstgid="277" name="tmap_etc1" tilewidth="104" tileheight="98">
+  <image source="tmap_etc1.png" width="624" height="294"/>
+ </tileset>
+ <tileset firstgid="295" name="건물1_1" tilewidth="104" tileheight="98">
+  <image source="건물1_1.png" width="624" height="588"/>
+ </tileset>
+ <tileset firstgid="331" name="건물1_2" tilewidth="104" tileheight="98">
+  <image source="건물1_2.png" width="624" height="812"/>
+ </tileset>
+ <tileset firstgid="379" name="건물2_2" tilewidth="104" tileheight="98">
+  <image source="건물2_2.png" width="624" height="392"/>
+ </tileset>
+ <tileset firstgid="403" name="건물3_3" tilewidth="104" tileheight="98">
+  <image source="건물3_3.png" width="624" height="392"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJylUssOwjAMy6f3w3ahE9rWVpzQJkBCjPESXzEXfIiiIiY4WG2yOE68ViJS/YEGCEACemAAWuZzLgJexG2Z01zwXKkn+O5ivtkceruO/QM1bc+a52h6rT/MkTUi5wZH7oh3OLWuN9xayr5cgT14U2Eear00Wu6Q6F328AwcjK7ey85vkWd+qjgqbt4xUHOjalasGVTtA/fTgjcQlX9H3rN3I7Uwr9Nvo+R9Mv9oKLwNm+sZe+XVjf71b78d9pKOXjfUD4x1j29Af5kW1P2CGS4Svz8=
+  </data>
+ </layer>
+ <layer name="Tile Layer 2" width="15" height="15">
+  <data encoding="base64" compression="zlib">
+   eJwTY2RgEKMAkwOQ9b4GYh1GhgZjINYFimkBaZD4eyD+DMS+QL4fVAxd7wc0c79A6QSgfDpUDROSG/G5+Q0WMUYi9UoxYvIj8eitRfIPIYCsF9meFCA7HohT0cxKxBFWINCBxf2w8KmCuBmnXhBQQOLLQ+VBYqyMqG4jlDYIycHk04B0ANQOBqiYHJTuQjKjnJE4e9GBPBY3g8wHpSNQ2kL2038gfssASZcgeQUsesnFAJ6SHj0=
+  </data>
+ </layer>
+</map>

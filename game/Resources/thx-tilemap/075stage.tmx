@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="isometric" width="20" height="16" tilewidth="104" tileheight="48">
+ <tileset firstgid="1" name="tmap_etc1" tilewidth="104" tileheight="98">
+  <image source="tmap_etc1.png" width="624" height="400"/>
+ </tileset>
+ <tileset firstgid="25" name="tmap_flower1" tilewidth="104" tileheight="98">
+  <image source="tmap_flower1.png" width="624" height="689"/>
+ </tileset>
+ <tileset firstgid="67" name="tmap_land2" tilewidth="104" tileheight="98">
+  <image source="tmap_land2.png" width="624" height="978"/>
+ </tileset>
+ <tileset firstgid="121" name="tmap_land3" tilewidth="104" tileheight="98">
+  <image source="tmap_land3.png" width="624" height="587"/>
+ </tileset>
+ <tileset firstgid="151" name="tmap_load1" tilewidth="104" tileheight="98">
+  <image source="tmap_load1.png" width="624" height="2450"/>
+ </tileset>
+ <tileset firstgid="301" name="건물1_1" tilewidth="104" tileheight="98">
+  <image source="건물1_1.png" width="624" height="588"/>
+ </tileset>
+ <tileset firstgid="337" name="건물1_2" tilewidth="104" tileheight="98">
+  <image source="건물1_2.png" width="624" height="812"/>
+ </tileset>
+ <tileset firstgid="385" name="건물2_2" tilewidth="104" tileheight="98">
+  <image source="건물2_2.png" width="624" height="392"/>
+ </tileset>
+ <tileset firstgid="409" name="건물3_3" tilewidth="104" tileheight="98">
+  <image source="건물3_3.png" width="624" height="392"/>
+ </tileset>
+ <layer name="Tile Layer 1" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJxrY2BgaBvFo3gUj+IRiAEsnKeB
+  </data>
+ </layer>
+ <layer name="Tile Layer 2" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJytVAEKwjAMzNP7mrUVfINDEJENdXuR7ZLbjqwTBAOhJV0ud2k6EZFT8SRqk63X4ucfHPnVHiKhxILo2bqeGnkd7QetHxLlgVP5LtzKGgmv0zorRlIPvkakb8Wwamxy/I44dw085lf30Fx9LrG+rBf7PluPs6vD+Ryr/HqK4wx3Myn/FRvaEuGNjh8c2lkncGGD6Y6GCU2MNxrenfiBB/SC0+x6yhwQw128qe/Z1RTFW3KT4jR72tKLuUgOr9pN9YXs8hkPOHU/uDOP9+1+eX7g74ZOnr34BY/55a0/i86n6BziDgdz/0bQwyN8ke3NyFYjvGS52917g0bkjjrPu5rMI5of/V94Fv5pH/m71Xc=
+  </data>
+ </layer>
+ <layer name="Tile Layer 3" width="20" height="16">
+  <data encoding="base64" compression="zlib">
+   eJxjYkCAaEYIzcRAHogA6tdH4jND6SpG8sxjxuEWHjLMqmVkaGDAYZ4kEjuBEVMMH0gm02/SQFwM1BuDpB9kJ66wD4eqMyBgLjMSG2RWOdTf6AAWhklQc9OAdCoQ5+FQDwJseNxHTJqJRAsrkJ44AuEHCpMwqBpuAuaDzAskIj7wuVUXTR0x/gpGsrMdya08aPpBcd6Ax309ULl4LGpygWLZwLjJQZID2UEoPZACQGYhuxeWHjOR7KwmIb0TG37EAlh4gjConAG5Vw7KB8lJo6kB8aWg6lShclxALIukDgCvZxE1
+  </data>
+ </layer>
+</map>

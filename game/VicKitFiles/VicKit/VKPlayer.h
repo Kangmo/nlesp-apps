@@ -1,10 +1,3 @@
-//
-//  VKPlayer.h
-//  GameKit
-//
-//  Copyright 2010 Apple Inc. All rights reserved.
-//
-
 #ifndef __O_VK_PLAYER_H__
 #define __O_VK_PLAYER_H__ (1)
 
@@ -20,13 +13,13 @@ VK_EXTERN_CLASS class VKPlayer {
 // 2. Communications failure
 // 3. Invalid player identifier
 public :
-	class LoadPlayersCompletionHandler {   
+	class LoadPlayersHandler {
     public :
-        virtual void onCompleteLoadPlayers(const TxStringArray & players, TxError * error) = 0;
+        virtual void onLoadPlayers(const TxStringArray & players, VKError * error) = 0;
     };
-	static void loadPlayers(const TxStringArray & identifiers, LoadPlayersCompletionHandler * handler);
+	static void loadPlayers(const TxStringArray & identifiers, LoadPlayersHandler * handler);
 
-private :
+protected :
 	TxString playerID_;
 	TxString alias_;
 	bool isFriend_;
@@ -45,11 +38,11 @@ public:
 // Asynchronously load the player's photo. Error will be nil on success.
 // Possible reasons for error:
 // 1. Communications failure
-    class LoadPhotoCompletionHandler {
+    class LoadPhotoHandler {
     public :
-        virtual void onCompleteLoadPhoto(const TxImage & photo, TxError *error) = 0;
+        virtual void onCompleteLoadPhoto(const TxImage & photo, VKError *error) = 0;
     };
-	void loadPhoto(VKPhotoSize size, LoadPhotoCompletionHandler * handler);
+	void loadPhoto(VKPhotoSize size, LoadPhotoHandler * handler);
 
 public :
     class ChangeHandler {

@@ -6,6 +6,7 @@
 //
 
 #import "GameKitHelper.h"
+#import "TargetConditionals.h"
 
 /*
 // Not supported on R0
@@ -19,7 +20,7 @@ GameKitHelper & GameKitHelper::sharedGameKitHelper()
     if ( theGameKitHelper == NULL ) 
     {
 // BUGBUG Need to initialize GameKitHelper        
-//        theGameKitHelper = new GameKitHelper();
+        theGameKitHelper = new GameKitHelper();
     }
     return *theGameKitHelper;
 }
@@ -32,6 +33,16 @@ GameKitHelper::GameKitHelper()
     
     // Not supported on R0
     //initCachedAchievements();
+    
+    // comment by MKJANG
+    /*
+    // init match
+    currentMatch_ = new VKMatch();
+    currentMatch_->delegate(this);
+     */
+    
+    // initialize VikKitSystem
+    VicKitSystem::initialize();
 }
 
 // BUGBUG : This destructor is never called.
@@ -43,31 +54,44 @@ GameKitHelper::~GameKitHelper()
 
 #pragma mark setLastError
 
-void GameKitHelper::setLastError(TxError * error)
+void GameKitHelper::setLastError(VKError * error)
 {
 	lastError_ = error;
 	
 	if (lastError_)
 	{
-		NSLog(@"GameKitHelper ERROR: %s", lastError_->toString().c_str() );
+		NSLog(@"GameKitHelper ERROR: %s", lastError_->errorMessage().c_str() );
 	}
 }
 
 #pragma mark Player Authentication
 
 //from VKLocalPlayer::AuthenticateCompletionHandler
-void GameKitHelper::onCompleteAuthenticate( TxError * error )
+void GameKitHelper::onAuthenticate( VKError * error )
 {
     setLastError(error);
     
     if (error == NULL)
     {
+        NSLog(@"GameKitHelper::onAuthenticate: authenticated sucessfully.");
         initMatchInvitationHandler();
         // Not supported on R0
         /*
         reportCachedAchievements();
         loadAchievements();
         */
+//#if (TARGET_IPHONE_SIMULATOR)
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
+        {
+        // request match
+        NSString *friendUserID = @"10026";
+        VKMatchRequest matchRequest;
+        TxStringArray array(1);
+        array[0] = friendUserID.UTF8String;
+        matchRequest.playersToInvite(array);
+        findMatch(matchRequest);
+        }
+//#endif
     }
 }
 
@@ -76,16 +100,31 @@ void GameKitHelper::authenticateLocalPlayer()
 	if (! isVicDataCenterAvailable() )
 		return;
 
-	VKLocalPlayer & localPlayer = VKLocalPlayer::localPlayer();
-	if (! localPlayer.authenticated() )
+	VKLocalPlayer * localPlayer = VKLocalPlayer::localPlayer();
+	if (! localPlayer->authenticated() )
 	{
 		// Authenticate player, using a block object. See Apple's Block Programming guide for more info about Block Objects:
 		// http://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/Blocks/Articles/00_Introduction.html
-		localPlayer.authenticate(this);
+//		localPlayer.authenticate(this);
+        
+        NSString *email;
+        NSString *pw;
+//#if (TARGET_IPHONE_SIMULATOR)
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
+        {
+        email = @"gamer3";
+        pw = @"gamer3";
+        }
+        else
+        {
+        email = @"gamer4";
+        pw = @"gamer4";
+        }
+        localPlayer->authenticate(email.UTF8String, pw.UTF8String, this);
 	}
 }
 
-// From VKLocalPlayer::LocalPlayerAuthenticationChangeHandler 
+// From VKLocalPlayer::LocalPlayerAuthenticationChangeHandler
 void GameKitHelper::onChangeAuthentication()
 {
 	[delegate_ onLocalPlayerAuthenticationChanged];
@@ -96,12 +135,12 @@ void GameKitHelper::registerForLocalPlayerAuthChange()
 	if (! isVicDataCenterAvailable() )
 		return;
 
-	VKLocalPlayer & localPlayer = VKLocalPlayer::localPlayer();
-    localPlayer.authChangeHandler(this);
+	VKLocalPlayer * localPlayer = VKLocalPlayer::localPlayer();
+    localPlayer->authChangeHandler(this);
 }
 
 // From VKLocalPlayer::LoadFriendsCompletionHandler
-void GameKitHelper::onCompleteLoadFriends(const TxStringArray & friends, TxError * error)
+void GameKitHelper::onLoadFriends(const TxStringArray & friends, VKError * error)
 {
     setLastError(error);
     [delegate_ onFriendListReceived:friends];
@@ -112,16 +151,17 @@ void GameKitHelper::getLocalPlayerFriends()
 	if (! isVicDataCenterAvailable() )
 		return;
 	
-	VKLocalPlayer & localPlayer = VKLocalPlayer::localPlayer();
-	if ( localPlayer.authenticated() )
+	VKLocalPlayer * localPlayer = VKLocalPlayer::localPlayer();
+	if ( localPlayer->authenticated() )
 	{
 		// First, get the list of friends (player IDs)
-		localPlayer.loadFriends(this);
+		localPlayer->loadFriends(this);
 	}
 }
 
-// From VKPlayer::LoadPlayersCompletionHandler 
-void GameKitHelper::onCompelteLoadPlayers(const TxStringArray & players, TxError * error)
+/*
+// From VKPlayer::LoadPlayersCompletionHandler
+void GameKitHelper::onCompleteLoadPlayers(const TxStringArray & players, TxError * error)
 {
     setLastError(error);
     
@@ -139,7 +179,7 @@ void GameKitHelper::getPlayerInfo(const TxStringArray & playerList)
         VKPlayer::loadPlayers(playerList, this);
 	}
 }
-
+*/
 // Not Supported on R0.
 /*
 #pragma mark Scores & Leaderboard
@@ -356,9 +396,9 @@ void GameKitHelper::getPlayerInfo(const TxStringArray & playerList)
 void GameKitHelper::disconnectCurrentMatch()
 {
     assert(currentMatch_);
-	currentMatch_->disconnect();
-	currentMatch_->delegate(NULL);
-	delete currentMatch_;
+    currentMatch_->disconnect();
+    currentMatch_->delegate(NULL);
+    delete currentMatch_;
     currentMatch_ = NULL;
 }
 
@@ -368,8 +408,11 @@ void GameKitHelper::setCurrentMatch(VKMatch * match)
 //	if ([currentMatch isEqual:match] == NO)
     if ( currentMatch_ != match )
 	{
-		disconnectCurrentMatch();
+        // comment by MKJANG
+		/*
+        disconnectCurrentMatch();
         assert(currentMatch_ == NULL);
+        */
 		currentMatch_ = match;
 		currentMatch_->delegate(this);
 	}
@@ -379,7 +422,8 @@ void GameKitHelper::setCurrentMatch(VKMatch * match)
 // From VKMatchmaker::InviteHandler
 void GameKitHelper::onInvite(VKInvite * acceptedInvite, TxStringArray * playersToInvite)
 {
-    disconnectCurrentMatch();
+    // comment by MKJANG
+    //disconnectCurrentMatch();
     
     if (acceptedInvite)
     {
@@ -387,6 +431,9 @@ void GameKitHelper::onInvite(VKInvite * acceptedInvite, TxStringArray * playersT
         // BUGBUG : Is it OK not to show the Matchmaker?
         
         //[self showMatchmakerWithInvite:acceptedInvite];
+        
+        // get match
+        VKMatchmaker::sharedMatchmaker()->matchForInvite(acceptedInvite, this);
     }
     else if (playersToInvite)
     {
@@ -407,13 +454,14 @@ void GameKitHelper::initMatchInvitationHandler()
 	if (! isVicDataCenterAvailable() )
 		return;
 
-    VKMatchmaker::sharedMatchmaker().inviteHandler(this);
+    VKMatchmaker::sharedMatchmaker()->inviteHandler(this);
 }
 
 // From VKMatchmaker::FindMatchCompletionHandler
-void GameKitHelper::onCompleteFindMatch(VKMatch * match, TxError * error)
+void GameKitHelper::onFindMatch(VKMatch *match, VKError *error)
 {
     setLastError(error);
+    NSLog(@"GameKitHelper::onFindMatch");
     
     if (match != nil)
     {
@@ -428,10 +476,22 @@ void GameKitHelper::findMatch(const VKMatchRequest & request)
 	if (! isVicDataCenterAvailable() )
 		return;
 	
-	VKMatchmaker::sharedMatchmaker().findMatch(request, this);
+	VKMatchmaker::sharedMatchmaker()->findMatch(request, this);
 }
 
+void GameKitHelper::onMatchForInvite(VKMatch *match, VKError *error)
+{
+    setLastError(error);
+    NSLog(@"GameKitHelper::onMatchForInvite");
+    
+    if (match != nil)
+    {
+        setCurrentMatch(match);
+        [delegate_ onMatchFound:match];
+    }
+}
 
+/*
 // From VKMatchmaker::AddPlayersCompletionHandler
 void GameKitHelper::onCompleteAddPlayers(TxError * error)
 {
@@ -478,7 +538,7 @@ void GameKitHelper::queryMatchmakingActivity()
 
 	VKMatchmaker::sharedMatchmaker().queryActivity(this);
 }
-
+*/
 #pragma mark Match Connection
 
 // The player state changed (eg. connected or disconnected)
@@ -506,7 +566,7 @@ void GameKitHelper::sendDataToAllPlayers(void * data, unsigned int length)
 	if (! isVicDataCenterAvailable() )
 		return;
 	
-	TxError* error = NULL;
+	VKError* error = NULL;
 	
     TxData packet(data, length);
     

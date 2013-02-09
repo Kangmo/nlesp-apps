@@ -27,28 +27,39 @@ typedef enum {
 class VKMatch {
 public :
 	VKMatch();
-	~VKMatch();
-private:
+	virtual ~VKMatch();
+protected:
 	TxStringArray playerIDs_;
 	VKMatchDelegate * delegate_;
+
+	// The number of players that are not connected to the match yet.
 	unsigned int expectedPlayerCount_;
+
+	unsigned long long matchId_;
 public :
 	const TxStringArray & playerIDs() const { return playerIDs_; };  // NSStrings of player identifiers in the match
 	VKMatchDelegate * delegate() { return delegate_; };
 	void delegate( VKMatchDelegate * arg ) { delegate_ = arg; };
 	unsigned int expectedPlayerCount() const { return expectedPlayerCount_; };
+	unsigned long long matchId() const {
+		return matchId_;
+	}
 
 // Asynchronously send data to one or more players. Returns YES if delivery started, NO if unable to start sending and error will be set.
-	bool sendData( const TxData & data, const TxStringArray & playerIDs, VKMatchSendDataMode dataMode, TxError ** error);
+	virtual bool sendData( const TxData & data, const TxStringArray & playerIDs, VKMatchSendDataMode dataMode, VKError ** error) = 0;
 
 // Asynchronously broadcasts data to all players. Returns YES if delivery started, NO if unable to start sending and error will be set.
-	bool sendDataToAllPlayers( const TxData & data, VKMatchSendDataMode dataMode, TxError ** error);
+	virtual bool sendDataToAllPlayers( const TxData & data, VKMatchSendDataMode dataMode, VKError ** error) = 0;
 
 // Disconnect the match. This will show all other players in the match that the local player has disconnected. This should be called before releasing the match instance.
-	void disconnect();
+	virtual void disconnect() = 0;
 };
 
 class VKMatchDelegate {
+public :
+	VKMatchDelegate() {};
+	virtual ~VKMatchDelegate() {};
+
 // The match received data sent from the player.
 	virtual void onReceiveData( VKMatch * match, const TxData & data, const TxString & playerID ) = 0;
 
@@ -56,10 +67,10 @@ class VKMatchDelegate {
 	virtual void onChangeState( VKMatch * match, const TxString & playerID, VKPlayerConnectionState state ) {};
 
 // The match was unable to connect with the player due to an error.
-	virtual void onConnectionFailure( VKMatch * match, const TxString & playerID, TxError * error ) {};
+	virtual void onConnectionFailure( VKMatch * match, const TxString & playerID, VKError * error ) {};
 
 // The match was unable to be established with any players due to an error.
-	virtual void onFailure( VKMatch * match, TxError * error ) {};
+	virtual void onFailure( VKMatch * match, VKError * error ) {};
 
 // This method is called when the match is interrupted; if it returns YES, a new invite will be sent to attempt reconnection. This is supported only for 1v1 games
 	virtual bool shouldReinvite(VKMatch * match, const TxString & playerID) {

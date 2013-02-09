@@ -11,11 +11,32 @@
 
 @implementation Player
 
+@synthesize mineNum;
+@synthesize freezeTime;
+@synthesize shoesOn;
+@synthesize relativePosition;
+@synthesize targetPosition;
+
 +(id) player
 {
 	return [[[self alloc] initWithFile:@"ninja.png"] autorelease];
 }
 
++(id) opponent
+{
+    return [[[self alloc] initWithFile:@"bomb.png"] autorelease];
+}
+
+- (id)init
+{
+    if (self = [super init])
+    {
+        self.mineNum = 0;
+        self.freezeTime = 0;
+        self.shoesOn = NO;
+    }
+    return self;
+}
 -(void) updateVertexZ:(CGPoint)tilePos tileMap:(CCTMXTiledMap*)tileMap
 {
 	// Lowest Z value is at the origin point and its value is equal to map width + height.

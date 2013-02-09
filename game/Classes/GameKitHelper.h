@@ -42,14 +42,15 @@
 
 
 class GameKitHelper : public VKMatchDelegate, 
-                             VKLocalPlayer::AuthenticateCompletionHandler, 
+                             VKLocalPlayer::AuthenticateHandler,
                              VKLocalPlayer::AuthenticateChangeHandler, 
-                             VKLocalPlayer::LoadFriendsCompletionHandler,
-                             VKPlayer::LoadPlayersCompletionHandler,
+                             VKLocalPlayer::LoadFriendsHandler,
+                             //VKPlayer::LoadPlayersCompletionHandler,
                              VKMatchmaker::InviteHandler,
-                             VKMatchmaker::FindMatchCompletionHandler,
-                             VKMatchmaker::AddPlayersCompletionHandler,
-                             VKMatchmaker::QueryActivityCompletionHandler
+                             VKMatchmaker::FindMatchHandler,
+                             VKMatchmaker::MatchForInviteHandler
+                             //VKMatchmaker::AddPlayersCompletionHandler,
+                             //VKMatchmaker::QueryActivityCompletionHandler
 //: NSObject<GKLeaderboardViewControllerDelegate, GKAchievementViewControllerDelegate, GKMatchmakerViewControllerDelegate, GKMatchDelegate>
 {
 public :
@@ -59,19 +60,19 @@ public :
 private :    
 	id<GameKitHelperProtocol> delegate_;
 	bool isVicDataCenterAvailable_;
-	TxError* lastError_;
+	VKError* lastError_;
 /*    
 	// Not supported on R0
 	NSMutableDictionary* achievements;
 	NSMutableDictionary* cachedAchievements;
-*/	
+*/
 	VKMatch* currentMatch_;
 	bool matchStarted_;
     
 private :
     void setCurrentMatch(VKMatch * match);
     void registerForLocalPlayerAuthChange();
-    void setLastError(TxError * error);
+    void setLastError(VKError * error);
     // Not Supported on R0.
     /*
      -(void) initCachedAchievements;
@@ -87,7 +88,7 @@ public:
     void delegate(id<GameKitHelperProtocol> arg) { delegate_ = arg; };
     bool isVicDataCenterAvailable() const { return isVicDataCenterAvailable_; };
     
-    TxError* lastError() { return lastError_; };
+    VKError* lastError() { return lastError_; };
 	// Not supported on R0
 //    @property (nonatomic, readonly) NSMutableDictionary* achievements;
     VKMatch* currentMatch() { return currentMatch_; };
@@ -139,29 +140,32 @@ public:
 
 private :    
     // Handlers
-    // from VKLocalPlayer::AuthenticateCompletionHandler
-    virtual void onCompleteAuthenticate( TxError * error );
+    // from VKLocalPlayer::AuthenticateHandler
+    virtual void onAuthenticate( VKError * error );
     
     // From VKLocalPlayer::AuthenticateChangeHandler 
     virtual void onChangeAuthentication();
     
-    // From VKLocalPlayer::LoadFriendsCompletionHandler
-    virtual void onCompleteLoadFriends(const TxStringArray & friends, TxError * error);
+    // From VKLocalPlayer::LoadFriendsHandler
+    virtual void onLoadFriends(const TxStringArray & friends, VKError * error);
 
     // From VKPlayer::LoadPlayersCompletionHandler 
-    virtual void onCompelteLoadPlayers(const TxStringArray & players, TxError * error);
-    
+//    virtual void onCompleteLoadPlayers(const TxStringArray & players, TxError * error);
+        
     // From VKMatchmaker::InviteHandler
     virtual void onInvite(VKInvite * acceptedInvite, TxStringArray * playersToInvite);
     
-    // From VKMatchmaker::FindMatchCompletionHandler
-    virtual void onCompleteFindMatch(VKMatch * match, TxError * error);
+    // From VKMatchmaker::FindMatchHandler
+    virtual void onFindMatch(VKMatch * match, VKError * error);
+    
+    // From VKMatchmaker::MatchForInviteHandler
+    virtual void onMatchForInvite(VKMatch *match, VKError *error);
     
     // From VKMatchmaker::AddPlayersCompletionHandler
-    virtual void onCompleteAddPlayers(TxError * error);
+//    virtual void onCompleteAddPlayers(TxError * error);
     
     // From VKMatchmaker::QueryActivityCompletionHandler
-    virtual void onCompleteQueryActivity(int activity, TxError * error);
+//    virtual void onCompleteQueryActivity(int activity, TxError * error);
     
     // From VKMatchDelegate
     virtual void onChangeState( VKMatch * match, const TxString & playerID, VKPlayerConnectionState state );

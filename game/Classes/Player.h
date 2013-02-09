@@ -11,9 +11,21 @@
 
 @interface Player : CCSprite 
 {
+    int mineNum;
+    float freezeTime;
+    bool shoesOn;
+    CGPoint relativePosition;
+    CGPoint targetPosition;
 }
 
+@property int mineNum;
+@property float freezeTime;
+@property bool shoesOn;
+@property CGPoint relativePosition;
+@property CGPoint targetPosition;
+
 +(id) player;
++(id) opponent;
 -(void) updateVertexZ:(CGPoint)tilePos tileMap:(CCTMXTiledMap*)tileMap;
 
 @end

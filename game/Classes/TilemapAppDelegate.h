@@ -13,8 +13,12 @@
 @interface TilemapAppDelegate : NSObject <UIApplicationDelegate> {
 	UIWindow			*window;
 	RootViewController	*viewController;
+    NSString *userID;
 }
 
 @property (nonatomic, retain) UIWindow *window;
+@property (strong, nonatomic) NSString *userID;
+
+- (void)showMainWindow;
 
 @end

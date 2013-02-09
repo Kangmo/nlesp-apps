@@ -5,6 +5,8 @@
  *  Created by Steffen Itterheim on 22.01.11.
  */
 
+#include "cocos2d.h"
+
 // TM16: note that all changes made to this send/receive example are prefixed with a // TM16: comment, to make the changes easier to find.
 
 // Defines individual types of messages that can be sent over the network. One type per packet.
@@ -12,6 +14,8 @@ typedef enum
 {
 	kPacketTypeScore = 1,
 	kPacketTypePosition,
+    kPacketTypeItem,
+    kPacketTypeEvent,
 } EPacketTypes;
 
 // Note: EPacketType type; must always be the first entry of every Packet struct
@@ -25,7 +29,6 @@ typedef struct
 typedef struct
 {
 	EPacketTypes type;
-	
 	int score;
 } SScorePacket;
 
@@ -37,6 +40,45 @@ typedef struct
 	CGPoint position;
 } SPositionPacket;
 
+typedef enum
+{
+    kItemTypeMine = 1,
+    kItemTypeShoes,
+} EItemTypes;
+
+typedef enum
+{
+    kActionTypeMineGet = 1,
+    kActionTypeMinePut,
+    kActionTypeMineStepOn,
+    
+    kActionTypeShoesGet,
+    kActionTypeShoesOn,
+    kActionTypeShoesOff,
+} EActionTypes;
+
+// packet to transmit item
+typedef struct
+{
+    EPacketTypes type;
+
+	EItemTypes itemType;
+    EActionTypes actionType;
+    CGPoint position;    
+} SItemPacket;
+
+typedef enum
+{
+    kEventTypeAtGoal = 1,
+} EEventTypes;
+
+// packet to transmit event
+typedef struct
+{
+    EPacketTypes type;
+    
+    EEventTypes eventType;
+} SEventPacket;
 
 // TODO for you: add more packets as needed. 
 

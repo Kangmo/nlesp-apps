@@ -12,7 +12,7 @@ Nanolat provides its example apps connecting to NLESP under a dual license model
 
 OEMs (Original Equipment Manufacturers), ISVs (Independent Software Vendors), VARs (Value Added Resellers)  and other distributors that combine and distribute commercially licensed software with NLESP-APPS software but do not wish to distribute the source code for the commercially licensed software under version 3 of the GNU General Public License (the "GPL") must enter into a commercial license agreement with Nanolat.
 
-The commercial license is similar to BSD without requiring to open source code of your app.
+The commercial license is similar to BSD without requiring to open source any code of your app.
 
 For start-up companies, Nanolat provides commercial license and technical support at small percentage of equity share. 
 Focus on your client side development and grow your business quicker by using NLESP-APPS. 

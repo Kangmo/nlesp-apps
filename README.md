@@ -4,9 +4,9 @@ nlesp-apps
 iOS/Android apps that connect to NLESP server. These include a multiplay game, a twitter like SNS, and a chatting app.
 
 # Dual License
-## NLESP Commercial License for OEMs, ISVs and VARs
+## NLESP-APPS Commercial License for OEMs, ISVs and VARs
  
-Nanolat provides its example apps connecting to NLESP under a dual license model designed to meet the development and distribution needs of both commercial distributors (such as OEMs, ISVs and VARs) and open source projects.
+Nanolat provides its example apps in NLESP-APPS connecting to NLESP under a dual license model designed to meet the development and distribution needs of both commercial distributors (such as OEMs, ISVs and VARs) and open source projects.
  
 ## For OEMs, ISVs, VARs and Other Distributors of Commercial Applications
 

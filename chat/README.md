@@ -1,7 +1,7 @@
 Chat
 ==========
 
-A chatting app which has following features. Runs on iOS.
+A chatting app which has following features. Runs on iOS and uses NLESP C++ SDK to connect to NLESP server.
 
 # Sign Up
 # Sign In

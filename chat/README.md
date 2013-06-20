@@ -1,7 +1,8 @@
 Chat
 ==========
 
-A chatting app which has following features.
+A chatting app which has following features. Runs on iOS.
+
 # Sign Up
 # Sign In
 # Find Friends
